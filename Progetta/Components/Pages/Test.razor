@@ -1,0 +1,25 @@
+﻿@page "/test"
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+@inject TaskService TaskService
+
+<h3>Lista Statusów</h3>
+<DxComboBox Data="@statusList"
+            TextFieldName="Value"
+            ValueFieldName="Key"
+            @bind-Value="selectedStatus" />
+
+<p>Wybrany status: @selectedStatus</p>
+
+@code {
+    private List<KeyValuePair<Status, string>> statusList; // Lista dla ComboBox
+    private Status selectedStatus = Status.ToDo; // Domyślnie ustawiony status
+
+    protected override void OnInitialized()
+    {
+        // Wypełnienie listy statusów z nazwami
+        statusList = Enum.GetValues<Status>()
+            .Select(status => new KeyValuePair<Status, string>(status, status.ToString()))
+            .ToList();
+    }
+}

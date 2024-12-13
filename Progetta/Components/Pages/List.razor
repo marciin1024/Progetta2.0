@@ -1,0 +1,91 @@
+﻿@page "/list"
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+@inject TaskService TaskService
+<h3>Lista</h3>
+<br />
+
+<button
+    type="button"
+    class="btn btn-primary"
+    @onclick="AddTask">
+    Dodaj zadanie
+</button>
+<br />
+
+<DxButton Text="ShowColumnChooser"
+    RenderStyle="ButtonRenderStyle.Secondary"
+    CssClass="column-chooser-button"
+    Click="OnClick"/>
+<br />
+
+<DxGrid Data="taskList" @ref="Grid" ColumnResizeMode="GridColumnResizeMode.NextColumn"
+    ShowGroupPanel="true">
+    
+    <Columns>
+        <DxGridDataColumn FieldName="Name" Caption="Nazwa Zadania"/>
+        <DxGridDataColumn FieldName="Description" Caption="Opis" Visible=false />
+        <DxGridDataColumn FieldName="Priority" Caption="Priorytet" />
+        <DxGridDataColumn FieldName="Status" Caption="Status">
+            <EditTemplate>
+                <DxComboBox Data="@statusList"
+                            TextFieldName="Value"
+                            ValueFieldName="Key"
+                            @bind-Value="selectedStatus" />
+            </EditTemplate>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="DueDate" Caption="Termin wykonania" />
+        <DxGridDataColumn FieldName="StartAt" Caption="Zaczyna się" />
+        <DxGridDataColumn FieldName="EndAt" Caption="Kończy się" />
+        <DxGridDataColumn FieldName="CreatedAt" Visible=false/>
+        <DxGridDataColumn FieldName="UpdatedAt" />
+    </Columns>
+</DxGrid>
+
+<DxComboBox Data="@taskList"
+    @bind-Value="statusList">
+</DxComboBox>
+             
+
+@code {
+    DxGrid Grid { get; set; }
+    private List<KeyValuePair<Status, string>> statusList; // Lista dla ComboBox
+    private Status selectedStatus = Status.ToDo;
+    private List<TaskToDo>? taskList;
+    private TaskToDo task;
+
+    protected override async Task OnInitializedAsync()
+    {   
+        taskList = await TaskService.GetAllTasksToDoAsync();
+        statusList = statusList = Enum.GetValues<Status>()
+            .Select(status => new KeyValuePair<Status, string>(status, status.ToString()))
+            .ToList();
+    }
+
+    private async Task AddTask()
+    {
+
+        await TaskService.AddTaskAsync(new TaskToDo { Name = "Nowe zadanie", ProjectId = 1 });
+        taskList = await TaskService.GetAllTasksToDoAsync();
+
+    }
+
+    private async Task HandleOnChange(TaskToDo task)
+    {
+        await TaskService.UpdateTaskToDoAsync(task);
+    }
+
+    private async Task HandleStatusChange(TaskToDo task, string? newValue)
+    {
+        if (Enum.TryParse(typeof(Status), newValue, out var newStatus))
+        {
+            task.Status = (Status)newStatus!;
+            await TaskService.UpdateTaskToDoAsync(task);
+        }
+    }
+
+    void OnClick()
+    {
+        Grid.ShowColumnChooser(".column-chooser-button");
+    }
+}

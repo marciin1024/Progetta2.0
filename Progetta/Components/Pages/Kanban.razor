@@ -1,0 +1,123 @@
+﻿@page "/kanban"
+@rendermode InteractiveServer
+@inject TaskService TaskService
+
+<h3>Kanban</h3>
+
+<button type="button"
+        class="btn btn-primary"
+        @onclick="AddTask">
+    Dodaj zadanie
+</button>
+<br />
+
+<div class="row py-4 h-75">
+    <!-- Kolumna ToDo -->
+    <div class="col-4 h-100">
+        <h2>@Status.ToDo</h2>
+        <div class="dropzone bg-light p-3 my-3 border border-1 rounded h-100"
+             ondragover="event.preventDefault();"
+             @ondrop="@(() => OnDrop(Status.ToDo))">
+            @if (taskList == null)
+{
+    <p>Loading tasks...</p>
+}
+else
+{
+             @foreach (var task in taskList.Where(t => t.Status == Status.ToDo))
+            {
+                <div class="draggable alert alert-primary" draggable="true"
+                     @ondragstart="@(() => OnDragStart(task))">
+                    <strong>@task.Name</strong>
+                </div>
+            }
+}
+        </div>
+    </div>
+
+    <!-- Kolumna InProgress -->
+    <div class="col-4 h-100">
+        <h2>@Status.InProgress</h2>
+        <div class="dropzone bg-light p-3 my-3 border border-1 rounded h-100"
+             ondragover="event.preventDefault();"
+             @ondrop="@(() => OnDrop(Status.InProgress))">
+            @if (taskList == null)
+{
+    <p>Loading tasks...</p>
+}
+else
+{
+             @foreach (var task in taskList.Where(t => t.Status == Status.InProgress))
+            {
+                <div class="draggable alert alert-warning" draggable="true"
+                     @ondragstart="@(() => OnDragStart(task))">
+                    <strong>@task.Name</strong>
+                </div>
+            }
+}
+        </div>
+    </div>
+
+    <!-- Kolumna Done -->
+    <div class="col-4 h-100">
+        <h2>@Status.Done</h2>
+        <div class="dropzone bg-light p-3 my-3 border border-1 rounded h-100"
+             ondragover="event.preventDefault();"
+             @ondrop="@(() => OnDrop(Status.Done))">
+            @if (taskList == null)
+{
+    <p>Loading tasks...</p>
+}
+else
+{
+             @foreach (var task in taskList.Where(t => t.Status == Status.Done))
+            {
+                <div class="draggable alert alert-success" draggable="true"
+                     @ondragstart="@(() => OnDragStart(task))">
+                    <strong>@task.Name</strong>
+                </div>
+            }
+}
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<TaskToDo>? taskList;
+    private TaskToDo? draggedTask;
+    private TaskToDo task;
+
+    protected override async Task OnInitializedAsync()
+    {
+        taskList = await TaskService.GetAllTasksToDoAsync();
+        StateHasChanged();
+    }
+
+    private void OnDragStart(TaskToDo task)
+    {    
+        draggedTask = task;
+    }
+
+    private void OnDrop(Status newStatus)
+    {
+        if (draggedTask != null)
+        {
+            draggedTask.Status = newStatus;
+            draggedTask = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddTask()
+    {
+
+        await TaskService.AddTaskAsync(new TaskToDo { Name = "Nowe zadanie", ProjectId = 1 });
+        taskList = await TaskService.GetAllTasksToDoAsync();
+
+    }
+
+    private async Task HandleOnChange(TaskToDo task)
+    {
+        await TaskService.UpdateTaskToDoAsync(task);
+    }
+}

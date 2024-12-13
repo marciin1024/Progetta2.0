@@ -1,0 +1,15 @@
+﻿﻿<div id="sidebar">         
+    <DxMenu Orientation="@Orientation.Vertical" CssClass="menu">
+        <Items>
+            <DxMenuItem NavigateUrl="/" Text="Home" CssClass="menu-item" IconCssClass="icon home-icon"></DxMenuItem>
+            <DxMenuItem NavigateUrl="/kanban" Text="Kanban" CssClass="menu-item" IconCssClass="icon counter-icon"></DxMenuItem>
+            <DxMenuItem NavigateUrl="/list" Text="List" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>                                    
+            <DxMenuItem NavigateUrl="/scheduler" Text="Scheduler" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>                                    
+        </Items>
+    </DxMenu>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = UrlGenerator.ToggleSidebarName)]
+    public bool ToggledSidebar { get; set; }
+}
