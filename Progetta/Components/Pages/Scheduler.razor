@@ -1,5 +1,6 @@
 ﻿@page "/scheduler"
 @rendermode InteractiveServer
+@inject TaskService TaskService
 <div @onclick="@(() => PopupVisible = true)">
     <p>CLICK TO SHOW A POP-UP WINDOW</p>
 </div>
@@ -10,20 +11,47 @@
     <BodyTemplate Context="PopupContext">
         <div style="padding-top: 1rem; padding-bottom: 1rem">
             <DxFormLayout>
-                <DxFormLayoutItem Caption="Contact Name:" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Nazwa zadania:" ColSpanMd="12">
                     <Template>
-                        <DxTextBox Text="Nancy Davolio" />
+                        <DxTextBox Text="Nowe zadanie" />
                     </Template>
                 </DxFormLayoutItem>
-                <DxFormLayoutItem Caption="Birth Date:" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Opis:" ColSpanMd="12">
+                    <Template>
+                        <DxMemo 
+                                Rows="8"
+                                Columns="50"
+                                CssClass="cw-320"
+                                InputId="memoCustomSize" />
+                    </Template>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Priorytet:" ColSpanMd="12">
+                    <Template>
+                        
+                    </Template>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Status:" ColSpanMd="12">
+                    <Template>                 
+                        <StatusComboBox></StatusComboBox>
+                    </Template>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Data rozpoczęcia:" ColSpanMd="12">
                     <Template>
                         <DxDateEdit Date="DateTime.Now.AddYears(-30)" />
                     </Template>
                 </DxFormLayoutItem>
-                <DxFormLayoutItem Caption="Years Worked:" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Data zakończenia:" ColSpanMd="12">
                     <Template>
-                        <DxSpinEdit Value="3" />
+                        <DxDateEdit Date="DateTime.Now.AddYears(-30)" />
                     </Template>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Termin wykonania:" ColSpanMd="12">
+                    <Template>
+                        <DxDateEdit Date="DateTime.Now.AddYears(-30)" />
+                    </Template>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Przydzielono do:" ColSpanMd="12">
+                    
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Email:" ColSpanMd="12">
                     <Template>
@@ -40,5 +68,5 @@
 </DxPopup>
 
 @code {
-    bool PopupVisible { get; set; } = false;
+    bool PopupVisible { get; set; } = false;  
 }

@@ -1,0 +1,36 @@
+﻿@using DevExpress.Blazor
+@using Progetta.Entities
+@using Progetta.Services
+
+@inject TaskService TaskService
+
+<DxComboBox Data="@Statuses"
+                        SearchMode="@SearchMode"
+                        SearchFilterCondition="@SearchFilterCondition"
+                        SearchTextParseMode="@SearchTextParseMode"
+                        Value="@Status"
+                        ValueChanged="@((Status status) => SelectedStatusChanged(status))"
+                        CssClass="cw-480"
+                        InputId="cbFiltering" />
+
+@code {
+    List<Status> Statuses { get; set; }
+    Status Status { get; set; }
+    ListSearchMode SearchMode { get; set; } = ListSearchMode.AutoSearch;
+    ListSearchFilterCondition SearchFilterCondition { get; set; } = ListSearchFilterCondition.Contains;
+    ListSearchTextParseMode SearchTextParseMode { get; set; } = ListSearchTextParseMode.GroupWordsByAnd;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Statuses = await TaskService.GetStatusesAsync();
+        Status = Statuses.Contains(Status.ToDo) ? Status.ToDo : Statuses.FirstOrDefault();
+    }
+    string GetSelectedValueDescription()
+    {
+        return Status != null ? Status.ToString() : "null";
+    }
+    void SelectedStatusChanged(Status status)
+    {
+        Status = status;
+    }
+}

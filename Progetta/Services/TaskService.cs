@@ -75,5 +75,23 @@ namespace Progetta.Services
             _context.TasksToDo.Remove(task);
             await _context.SaveChangesAsync();
         }
+
+        // 6. Pobranie wszystkich statusów
+        public async Task<List<Status>> GetStatusesAsync()
+        {
+            return await _context.TasksToDo
+                .Select(t => t.Status)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        // 7. Pobranie wszystkich priorytetów
+        public async Task<List<TaskPriority>> GetPrioritiesAsync()
+        {
+            return await _context.TasksToDo
+                .Select(t => t.Priority)
+                .Distinct()
+                .ToListAsync();
+        }
     }
 }
