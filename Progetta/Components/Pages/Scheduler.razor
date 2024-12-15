@@ -6,6 +6,13 @@
     <p>CLICK TO SHOW A POP-UP WINDOW</p>
 </div>
 
+@if (taskList == null)
+        {
+<p>Loading tasks...</p>
+        }
+        else
+        {
+
 <DxPopup @bind-Visible="@PopupVisible"
          HeaderText="Edit Contact"
          ShowFooter="true">
@@ -14,12 +21,13 @@
             <DxFormLayout>
                 <DxFormLayoutItem Caption="Nazwa zadania:" ColSpanMd="12">
                     <Template>
-                        <DxTextBox Text="Nowe zadanie" />
+                        <DxTextBox @bind-Text="@task.Name" />
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Opis:" ColSpanMd="12">
                     <Template>
-                        <DxMemo Rows="8"
+                            <DxMemo @bind-Text="@task.Description"
+                                Rows="8"
                                 Columns="50"
                                 CssClass="cw-320"
                                 InputId="memoCustomSize" />
@@ -30,7 +38,7 @@
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Status:" ColSpanMd="12">
                     <Template>
-                        <StatusComboBox></StatusComboBox>
+                            <StatusComboBox></StatusComboBox>
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Projekt:" ColSpanMd="12">
@@ -73,13 +81,15 @@
     </BodyTemplate>
     <FooterContentTemplate>
         <DxButton RenderStyle="ButtonRenderStyle.Primary" Text="OK"
-                  Click="@context.CloseCallback" />
+                      Click="OnOkButtonClick" />
     </FooterContentTemplate>
 </DxPopup>
+}
 
 @code {
     bool PopupVisible { get; set; } = false;
     private List<TaskToDo>? taskList;
+    List<Status> statuses { get; set; }
     private TaskToDo task;
 
     void OnStartAtChanged(DateTime? date)
@@ -94,12 +104,30 @@
 
     protected override async Task OnInitializedAsync()
     {
-        task = new TaskToDo
-            {
-                Id = 1,
-                Name = "Przykładowe zadanie",
-                StartAt = null // Początkowo brak daty
-            };
+        taskList = await TaskService.GetAllTasksToDoAsync();
+        
+            task = taskList?.FirstOrDefault(); // Przypisz pierwszy element lub null, jeśli lista jest pusta
+            statuses = await TaskService.GetStatusesAsync();
+        
+    }
+
+    void OnStatusChanged(Status status)
+    {
+        task.Status = status;
+        SaveTaskChanges();  // Zapisz zmiany po zmianie statusu
+    }
+
+    async Task SaveTaskChanges()
+    {
+        // Możesz wywołać metodę aktualizującą w bazie danych
+        await TaskService.UpdateTaskToDoAsync(task);
+    }
+
+    void OnOkButtonClick()
+    {
+        // Można tu dodatkowo zapisać zmiany lub wykonać inne akcje
+        SaveTaskChanges();
+        PopupVisible = false; // Zamknięcie popupu
     }
 }
 
