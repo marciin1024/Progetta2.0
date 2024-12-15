@@ -58,6 +58,8 @@ namespace Progetta.Services
             existingTask.UpdatedAt = DateTime.UtcNow;
             existingTask.ProjectId = task.ProjectId;
             existingTask.AssignedToId = task.AssignedToId;
+            existingTask.CreatedById = task.CreatedById;
+            existingTask.StartAt = task.StartAt;
 
             _context.TasksToDo.Update(existingTask);
             await _context.SaveChangesAsync();
@@ -91,6 +93,13 @@ namespace Progetta.Services
             return await _context.TasksToDo
                 .Select(t => t.Priority)
                 .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<List<User>> GetUsersAsync()
+        {
+            return await _context.Users
+                .OrderBy(u => u.FirstName)
                 .ToListAsync();
         }
     }

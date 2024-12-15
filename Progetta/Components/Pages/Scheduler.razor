@@ -1,6 +1,7 @@
 ﻿@page "/scheduler"
 @rendermode InteractiveServer
 @inject TaskService TaskService
+
 <div @onclick="@(() => PopupVisible = true)">
     <p>CLICK TO SHOW A POP-UP WINDOW</p>
 </div>
@@ -18,44 +19,53 @@
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Opis:" ColSpanMd="12">
                     <Template>
-                        <DxMemo 
-                                Rows="8"
+                        <DxMemo Rows="8"
                                 Columns="50"
                                 CssClass="cw-320"
                                 InputId="memoCustomSize" />
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Priorytet:" ColSpanMd="12">
-                    <Template>
-                        
-                    </Template>
+
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Status:" ColSpanMd="12">
-                    <Template>                 
+                    <Template>
                         <StatusComboBox></StatusComboBox>
+                    </Template>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Projekt:" ColSpanMd="12">
+
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Przydzielono do:" ColSpanMd="12">
+                    <Template>
+
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Data rozpoczęcia:" ColSpanMd="12">
                     <Template>
-                        <DxDateEdit Date="DateTime.Now.AddYears(-30)" />
-                    </Template>
-                </DxFormLayoutItem>
-                <DxFormLayoutItem Caption="Data zakończenia:" ColSpanMd="12">
-                    <Template>
-                        <DxDateEdit Date="DateTime.Now.AddYears(-30)" />
+                        <DxDateEdit Date="@task.StartAt"
+                                    DateChanged="@((DateTime? date) => OnStartAtChanged(date))" />
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Termin wykonania:" ColSpanMd="12">
                     <Template>
-                        <DxDateEdit Date="DateTime.Now.AddYears(-30)" />
+                        <DxDateEdit Date="@task.DueDate"
+                                    DateChanged="@((DateTime? date) => OnDueDateChanged(date))" />
                     </Template>
                 </DxFormLayoutItem>
-                <DxFormLayoutItem Caption="Przydzielono do:" ColSpanMd="12">
-                    
-                </DxFormLayoutItem>
-                <DxFormLayoutItem Caption="Email:" ColSpanMd="12">
+                <DxFormLayoutItem Caption="Dodał:" ColSpanMd="12">
                     <Template>
-                        <DxTextBox Text="NancyDavolio@sample.com" />
+                        
+                    </Template>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Data utworzenia:" ColSpanMd="12">
+                    <Template>
+
+                    </Template>
+                </DxFormLayoutItem>
+                <DxFormLayoutItem Caption="Data ostatniej aktualizacji:" ColSpanMd="12">
+                    <Template>
+
                     </Template>
                 </DxFormLayoutItem>
             </DxFormLayout>
@@ -68,5 +78,28 @@
 </DxPopup>
 
 @code {
-    bool PopupVisible { get; set; } = false;  
+    bool PopupVisible { get; set; } = false;
+    private List<TaskToDo>? taskList;
+    private TaskToDo task;
+
+    void OnStartAtChanged(DateTime? date)
+    {
+        task.StartAt = date;
+    }
+
+    void OnDueDateChanged(DateTime? date)
+    {
+        task.DueDate = date;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        task = new TaskToDo
+            {
+                Id = 1,
+                Name = "Przykładowe zadanie",
+                StartAt = null // Początkowo brak daty
+            };
+    }
 }
+

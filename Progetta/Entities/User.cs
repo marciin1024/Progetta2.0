@@ -15,6 +15,8 @@ namespace Progetta.Entities
         public string Password { get; set; }
         public UserRole Role { get; set; }
 
+        public string FullName => $"{FirstName} {LastName}";
+
         public ICollection<Comment> Comments { get; set; }
         public ICollection<Project> OwnedProjects { get; set; }
         public ICollection<UserProject> CollaboratedProjects { get; set; }

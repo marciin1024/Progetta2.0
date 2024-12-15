@@ -12,7 +12,6 @@ namespace Progetta.Entities
         public Status Status { get; set; } = Status.ToDo;
         public TaskPriority Priority { get; set; } = TaskPriority.Medium;
         public DateTime? StartAt { get; set; }
-        public DateTime? EndAt { get; set; }
 
         public DateTime? DueDate { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

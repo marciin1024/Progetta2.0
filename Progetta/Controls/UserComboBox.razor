@@ -1,0 +1,41 @@
+﻿@using DevExpress.Blazor
+@using Progetta.Entities
+@using Progetta.Services
+
+@inject TaskService TaskService
+
+<DxComboBox Data="@AssignedUsers"
+            SearchMode="@SearchMode"
+            SearchFilterCondition="@SearchFilterCondition"
+            SearchTextParseMode="@SearchTextParseMode"
+            Value="@SelectedUser"
+            ValueChanged="@((User user) => SelectedUserChanged(user))"
+            TextFieldName="FullName"
+            CssClass="cw-480"
+            InputId="cbAssignedUsers" />
+
+<p>Wybrany użytkownik: @SelectedUser?.FullName</p>
+
+@code {
+    List<User> AssignedUsers { get; set; }
+    User SelectedUser { get; set; }
+    ListSearchMode SearchMode { get; set; } = ListSearchMode.AutoSearch;
+    ListSearchFilterCondition SearchFilterCondition { get; set; } = ListSearchFilterCondition.Contains;
+    ListSearchTextParseMode SearchTextParseMode { get; set; } = ListSearchTextParseMode.GroupWordsByAnd;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AssignedUsers = await TaskService.GetUsersAsync();
+        SelectedUser = AssignedUsers.FirstOrDefault();
+    }
+
+    string GetSelectedValueDescription()
+    {
+        return SelectedUser != null ? SelectedUser.FullName : "null";
+    }
+
+    void SelectedUserChanged(User user)
+    {
+        SelectedUser = user;
+    }
+}
