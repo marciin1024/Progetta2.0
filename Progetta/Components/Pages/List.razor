@@ -5,60 +5,94 @@
 <h3>Lista</h3>
 <br />
 
-<button
-    type="button"
-    class="btn btn-primary"
-    @onclick="AddTask">
-    Dodaj zadanie
-</button>
-<br />
+<DxGrid @ref="Grid"
+        PageSize="12"
+        Data="DataSource"
+        KeyFieldName="Id"
+        ValidationEnabled="false"
+        EditMode="GridEditMode.EditCell"
+        EditModelSaving="Grid_EditModelSaving"
+        DataItemDeleting="Grid_DataItemDeleting"
+        CustomizeEditModel="Grid_CustomizeEditModel"
+        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+        ShowGroupPanel="true"
+        TextWrapEnabled="false"
+        HighlightRowOnHover="true">
 
-<DxButton Text="ShowColumnChooser"
-    RenderStyle="ButtonRenderStyle.Secondary"
-    CssClass="column-chooser-button"
-    Click="OnClick"/>
-<br />
-
-<DxGrid Data="taskList" @ref="Grid" ColumnResizeMode="GridColumnResizeMode.NextColumn"
-    ShowGroupPanel="true">
-    
     <Columns>
-        <DxGridDataColumn FieldName="Name" Caption="Nazwa Zadania"/>
-        <DxGridDataColumn FieldName="Description" Caption="Opis" Visible=false />
-        <DxGridDataColumn FieldName="Priority" Caption="Priorytet" />
-        <DxGridDataColumn FieldName="Status" Caption="Status"/>
-        <DxGridDataColumn FieldName="DueDate" Caption="Termin wykonania" />
-        <DxGridDataColumn FieldName="StartAt" Caption="Data rozpoczęcia" />
-        <DxGridDataColumn FieldName="CreatedAt" Visible=false/>
-        <DxGridDataColumn FieldName="UpdatedAt" />
+        <DxGridDataColumn FieldName="Name" MinWidth="50" />
+        <DxGridDataColumn FieldName="Description" MinWidth="80" />
+        <DxGridDataColumn FieldName="Status" MinWidth="80" />
+        <DxGridDataColumn FieldName="Priority" MinWidth="200" />
+        <DxGridDataColumn FieldName="AssignedToId" MinWidth="150" />
+        <DxGridDataColumn FieldName="CreatedById" MinWidth="150" />
+        <DxGridDataColumn FieldName="ProjectId" MinWidth="150" />
+        <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
+        <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
+        <DxGridCommandColumn Width="30px">
+            <HeaderTemplate>
+                <DxButton IconName="Add"
+                          RenderStyle="ButtonRenderStyle.Link"
+                          aria-label="Add"
+                          Click="@(() => Grid.StartEditNewRowAsync())" />
+            </HeaderTemplate>
+            <CellDisplayTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton IconCssClass="grid-icon grid-icon-delete"
+                              CssClass="grid-delete-btn"
+                              RenderStyle="ButtonRenderStyle.Link"
+                              aria-label="Delete"
+                              Click="@(() => Grid.ShowRowDeleteConfirmation(context.VisibleIndex))" />
+                </div>
+            </CellDisplayTemplate>
+            <CellEditTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton Enabled="false"
+                              CssClass="grid-disabled-button"
+                              IconCssClass="grid-icon grid-icon-delete"
+                              aria-label="Delete"
+                              RenderStyle="ButtonRenderStyle.Link" />
+                </div>
+            </CellEditTemplate>
+        </DxGridCommandColumn>
     </Columns>
 </DxGrid>
 
 @code {
-    DxGrid Grid { get; set; }
-    private List<TaskToDo>? taskList;
-    private TaskToDo task;
-
+    IGrid Grid { get; set; }
+    IEnumerable<TaskToDo> DataSource { get; set; }
     protected override async Task OnInitializedAsync()
-    {   
-        taskList = await TaskService.GetAllTasksToDoAsync();
-    }
-
-    private async Task AddTask()
     {
-
-        await TaskService.AddTaskAsync(new TaskToDo { Name = "Nowe zadanie", ProjectId = 1 });
-        taskList = await TaskService.GetAllTasksToDoAsync();
-
+        DataSource = await TaskService.GetAllTasksToDoAsync();
     }
-
-    private async Task HandleOnChange(TaskToDo task)
+    void Grid_CustomizeEditModel(GridCustomizeEditModelEventArgs e)
     {
-        await TaskService.UpdateTaskToDoAsync(task);
+        if (e.IsNew)
+        {
+            var newTask = (TaskToDo)e.EditModel;
+            newTask.Name = "Nowe Zadanie";
+            newTask.ProjectId = 1;
+            newTask.CreatedAt = DateTime.UtcNow;
+        }
     }
-
-    void OnClick()
+    async Task Grid_EditModelSaving(GridEditModelSavingEventArgs e)
     {
-        Grid.ShowColumnChooser(".column-chooser-button");
+        var editableTask = (TaskToDo)e.EditModel;
+        if (e.IsNew)
+            await TaskService.AddTaskAsync(editableTask);
+        else
+            await TaskService.UpdateTaskToDoAsync(editableTask);
+        await UpdateDataAsync();
+    }
+    async Task Grid_DataItemDeleting(GridDataItemDeletingEventArgs e)
+    {
+        await TaskService.DeleteTaskToDoAsync((TaskToDo)e.DataItem);
+        await UpdateDataAsync();
+    }
+    async Task UpdateDataAsync()
+    {
+        DataSource = await TaskService.GetAllTasksToDoAsync();
     }
 }
+
+

@@ -32,6 +32,11 @@ namespace Progetta.Entities
         public ICollection<Comment> Comments { get; set; }
         public ICollection<TaskTag> TaskTags { get; set; }
 
+        public TaskToDo Clone()
+        {
+            return (TaskToDo)MemberwiseClone();
+
+        }
     }
 
     public enum Status

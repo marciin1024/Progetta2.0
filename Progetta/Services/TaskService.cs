@@ -66,9 +66,9 @@ namespace Progetta.Services
         }
 
         // 5. Usuwanie zadania
-        public async Task DeleteTaskToDoAsync(int id)
+        public async Task DeleteTaskToDoAsync(TaskToDo taskToDo)
         {
-            var task = await _context.TasksToDo.FindAsync(id);
+            var task = await _context.TasksToDo.FindAsync(taskToDo.Id);
             if (task == null)
             {
                 throw new Exception("TaskToDo not found.");
