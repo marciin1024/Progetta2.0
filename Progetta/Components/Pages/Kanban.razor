@@ -26,10 +26,11 @@ else
 {
              @foreach (var task in taskList.Where(t => t.Status == Status.ToDo))
             {
-                <div class="draggable alert alert-primary" draggable="true"
-                     @ondragstart="@(() => OnDragStart(task))">
-                    <strong>@task.Name</strong>
-                </div>
+                    <TaskCard Task="task"
+                              CssClass="alert-primary"
+                              OnSaveTask="HandleOnChange"
+                              OnDeleteTask="DeleteTask"
+                              OnDragStart="OnDragStart" />
             }
 }
         </div>
@@ -49,10 +50,11 @@ else
 {
              @foreach (var task in taskList.Where(t => t.Status == Status.InProgress))
             {
-                <div class="draggable alert alert-warning" draggable="true"
-                     @ondragstart="@(() => OnDragStart(task))">
-                    <strong>@task.Name</strong>
-                </div>
+                    <TaskCard Task="task"
+                              CssClass="alert-primary"
+                              OnSaveTask="HandleOnChange"
+                              OnDeleteTask="DeleteTask"
+                              OnDragStart="OnDragStart" />
             }
 }
         </div>
@@ -72,10 +74,11 @@ else
 {
              @foreach (var task in taskList.Where(t => t.Status == Status.Done))
             {
-                <div class="draggable alert alert-success" draggable="true"
-                     @ondragstart="@(() => OnDragStart(task))">
-                    <strong>@task.Name</strong>
-                </div>
+                    <TaskCard Task="task"
+                              CssClass="alert-primary"
+                              OnSaveTask="HandleOnChange"
+                              OnDeleteTask="DeleteTask"
+                              OnDragStart="OnDragStart" />
             }
 }
         </div>
@@ -119,5 +122,12 @@ else
     private async Task HandleOnChange(TaskToDo task)
     {
         await TaskService.UpdateTaskToDoAsync(task);
+    }
+
+    private async Task DeleteTask(TaskToDo task)
+    {
+        await TaskService.DeleteTaskToDoAsync(task);
+        taskList = await TaskService.GetAllTasksToDoAsync(); // Odśwież listę zadań
+        StateHasChanged();
     }
 }

@@ -24,17 +24,20 @@
         <DxGridDataColumn FieldName="Description" MinWidth="80" />
         <DxGridDataColumn FieldName="Status" MinWidth="80" />
         <DxGridDataColumn FieldName="Priority" MinWidth="200" />
-        <DxGridDataColumn FieldName="AssignedToId" MinWidth="150" />
+        <DxGridDataColumn Caption="Assigned To" MinWidth="150"/>
         <DxGridDataColumn FieldName="CreatedById" MinWidth="150" />
         <DxGridDataColumn FieldName="ProjectId" MinWidth="150" />
         <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
         <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
         <DxGridCommandColumn Width="30px">
             <HeaderTemplate>
-                <DxButton IconName="Add"
-                          RenderStyle="ButtonRenderStyle.Link"
-                          aria-label="Add"
-                          Click="@(() => Grid.StartEditNewRowAsync())" />
+                <div class="grid-cell-align-center">
+                    <DxButton CssClass="grid-delete-btn"
+                            IconCssClass="grid-icon grid-icon-add"
+                            RenderStyle="ButtonRenderStyle.Link"
+                            aria-label="Add"
+                            Click="@(() => Grid.StartEditNewRowAsync())" />
+                </div>
             </HeaderTemplate>
             <CellDisplayTemplate>
                 <div class="grid-cell-align-center">
@@ -57,6 +60,8 @@
         </DxGridCommandColumn>
     </Columns>
 </DxGrid>
+
+<ProjectSelection></ProjectSelection>
 
 @code {
     IGrid Grid { get; set; }

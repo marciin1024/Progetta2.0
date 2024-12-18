@@ -1,0 +1,78 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using Progetta.Entities
+
+<div class="draggable alert @CssClass d-flex justify-content-between align-items-center" draggable="true" @ondragstart="OnDragStartHandler">
+    @if (IsEditing)
+    {
+        <input type="text" class="form-control me-2"
+               @bind="Task.Name"
+               @onblur="OnSave"
+               @onkeydown="HandleKeyPress" />
+    }
+    else
+    {
+        <strong @onclick="EnableEditing" class="flex-grow-1">@Task.Name</strong>
+    }
+    <button type="button" class="btn-close" @onclick="OnDelete" title="Usuń zadanie"></button>
+</div>
+
+@code {
+    [Parameter]
+    public TaskToDo Task { get; set; } = default!;
+    
+    [Parameter]
+    public EventCallback<TaskToDo> OnSaveTask { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskToDo> OnDeleteTask { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskToDo> OnDragStart { get; set; }
+
+    [Parameter]
+    public string CssClass { get; set; } = "alert-primary";
+
+    private bool IsEditing { get; set; } = false;
+
+    private void EnableEditing()
+    {
+        IsEditing = true;
+    }
+
+    private async Task OnSave()
+    {
+        IsEditing = false;
+        if (OnSaveTask.HasDelegate)
+        {
+            await OnSaveTask.InvokeAsync(Task);
+        }
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await OnSave();
+        }
+        else if (e.Key == "Escape")
+        {
+            IsEditing = false;
+        }
+    }
+
+    private async Task OnDragStartHandler()
+    {
+        if (OnDragStart.HasDelegate)
+        {
+            await OnDragStart.InvokeAsync(Task);
+        }
+    }
+
+    private async Task OnDelete()
+    {
+        if (OnDeleteTask.HasDelegate)
+        {
+            await OnDeleteTask.InvokeAsync(Task);
+        }
+    }
+}

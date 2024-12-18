@@ -90,3 +90,34 @@ html, body {
     gap: 0.625rem;
     max-width: 100%;
 }
+
+/* grid icons */
+
+.grid-icon-add {
+    -webkit-mask-image: url(../images/icons/add.svg);
+    mask-image: url(../images/icons/add.svg);
+}
+
+.grid-icon-delete {
+    -webkit-mask-image: url("../images/icons/delete.svg");
+    mask-image: url("../images/icons/delete.svg");
+}
+
+.grid-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1rem;
+    min-width: 1rem;
+    min-height: 1rem;
+    background-size: contain;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    background-position: center center;
+    background-color: currentColor;
+    vertical-align: middle;
+    margin: -0.125rem;
+}
+
+
+
+

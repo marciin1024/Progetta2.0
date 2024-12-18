@@ -1,0 +1,77 @@
+﻿@using DevExpress.Blazor
+@using Microsoft.AspNetCore.Components.Web
+@using Progetta.Entities
+
+<div class="cw-240">
+    <h5 class="card-title">Projekty</h5>
+    <DxTreeView AllowSelectNodes="true"
+                AnimationType="LayoutAnimationType.Slide">
+        <Nodes>
+            @foreach (var category in categories)
+            {
+                <DxTreeViewNode Text="@category.Name">
+                    <Nodes>
+                        @if (category.Projects != null && category.Projects.Any())
+                        {
+                            @foreach (var project in category.Projects)
+                            {
+                                <DxTreeViewNode Text="@project.Name" />
+                            }
+                        }
+                        else
+                        {
+                            <DxTreeViewNode Text="Brak projektów" />
+                        }
+                    </Nodes>
+                </DxTreeViewNode>
+            }
+        </Nodes>
+    </DxTreeView>
+    <p class="demo-text cw-480 mt-2">Selected group: <b>@SelectedGroup</b></p>
+</div>
+
+@code {
+    // Lista kategorii
+    List<Category> categories = new()
+    {
+        new Category
+        {
+            Id = 1, Name = "Aplikacje Webowe",
+            Projects = new List<Project>
+            {
+                new Project { Id = 1, Name = "System Zarządzania Treścią (CMS)" },
+                new Project { Id = 2, Name = "Platforma eCommerce dla małych firm" }
+            }
+        },
+        new Category
+        {
+            Id = 2, Name = "Systemy Mobilne",
+            Projects = new List<Project>
+            {
+                new Project { Id = 3, Name = "Aplikacja Fitness Tracker" },
+                new Project { Id = 4, Name = "Aplikacja Pogodowa" }
+            }
+        },
+        new Category
+        {
+            Id = 3, Name = "Bazy Danych",
+            Projects = new List<Project>
+            {
+                new Project { Id = 5, Name = "System Zarządzania Bazą Klientów" }
+            }
+        },
+        new Category
+        {
+            Id = 4, Name = "Blockchain",
+            Projects = new List<Project>
+            {
+                new Project { Id = 6, Name = "Portfel Kryptowalut" }
+            }
+        }
+    };
+
+    // Wybrana kategoria
+    string SelectedGroup = "Brak";
+
+}
+
