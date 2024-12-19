@@ -1,19 +1,87 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
 @using Progetta.Entities
 
-<div class="draggable alert @CssClass d-flex justify-content-between align-items-center" draggable="true" @ondragstart="OnDragStartHandler">
-    @if (IsEditing)
-    {
-        <input type="text" class="form-control me-2"
-               @bind="Task.Name"
-               @onblur="OnSave"
-               @onkeydown="HandleKeyPress" />
-    }
-    else
-    {
-        <strong @onclick="EnableEditing" class="flex-grow-1">@Task.Name</strong>
-    }
-    <button type="button" class="btn-close" @onclick="OnDelete" title="Usuń zadanie"></button>
+<div class="draggable alert @CssClass" draggable="true" @ondragstart="OnDragStartHandler">
+    <div class="d-flex flex-column w-100">
+        <!-- Task Name -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            @if (IsEditing)
+            {
+                <input type="text" class="form-control me-2"
+                       @bind="Task.Name"
+                       @onblur="OnSave"
+                       @onkeydown="HandleKeyPress" />
+            }
+            else
+            {
+                <strong @onclick="EnableEditing" class="flex-grow-1">@Task.Name</strong>
+            }
+            <button type="button" class="btn-close" @onclick="OnDelete" title="Usuń zadanie"></button>
+        </div>
+
+        <!-- Priority -->
+        <div class="d-flex align-items-center mb-2">
+            <small class="text-muted me-2">Priorytet:</small>
+            @if (IsEditingPriority)
+            {
+                <select class="form-select form-select-sm" style="width: auto;"
+                        @bind="Task.Priority"
+                        @onblur="OnSavePriority">
+                    @foreach (TaskPriority priority in Enum.GetValues(typeof(TaskPriority)))
+                    {
+                        <option value="@priority">@priority</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <span @onclick="EnablePriorityEditing" class="badge @GetPriorityClass()">@Task.Priority</span>
+            }
+        </div>
+
+        <!-- Due Date -->
+        <div class="d-flex align-items-center mb-2">
+            <small class="text-muted me-2">Termin:</small>
+            @if (IsEditingDueDate)
+            {
+                <input type="date" class="form-control form-control-sm"
+                       @bind="Task.DueDate"
+                       @onblur="OnSaveDueDate" />
+            }
+            else
+            {
+                <span @onclick="EnableDueDateEditing">
+                    @(Task.DueDate?.ToShortDateString() ?? "Brak terminu")
+                </span>
+            }
+        </div>
+
+        <!-- Assigned To -->
+        <div class="d-flex align-items-center">
+            <small class="text-muted me-2">Przypisane do:</small>
+            @if (IsEditingAssignedTo)
+            {
+                <select class="form-select form-select-sm" style="width: auto;"
+                        @bind="Task.AssignedToId"
+                        @onblur="OnSaveAssignedTo">
+                    <option value="">Brak przypisania</option>
+                    @if (Users != null)
+                    {
+                        @foreach (var user in Users)
+                        {
+                            <option value="@user.Id">@user.FullName</option>
+                        }
+                    }
+                </select>
+            }
+            else
+            {
+                <span @onclick="EnableAssignedToEditing">
+                    @(Task.AssignedTo?.FullName ?? "Nieprzypisane")
+                </span>
+            }
+        </div>
+    </div>
 </div>
 
 @code {
@@ -32,16 +100,56 @@
     [Parameter]
     public string CssClass { get; set; } = "alert-primary";
 
-    private bool IsEditing { get; set; } = false;
+    [Parameter]
+    public List<User> Users { get; set; }
 
-    private void EnableEditing()
+    private bool IsEditing { get; set; } = false;
+    private bool IsEditingPriority { get; set; } = false;
+    private bool IsEditingDueDate { get; set; } = false;
+    private bool IsEditingAssignedTo { get; set; } = false;
+
+    private string GetPriorityClass()
     {
-        IsEditing = true;
+        return Task.Priority switch
+        {
+            TaskPriority.Low => "bg-success",
+            TaskPriority.Medium => "bg-warning",
+            TaskPriority.High => "bg-danger",
+            _ => "bg-secondary"
+        };
     }
+
+    private void EnableEditing() => IsEditing = true;
+    private void EnablePriorityEditing() => IsEditingPriority = true;
+    private void EnableDueDateEditing() => IsEditingDueDate = true;
+    private void EnableAssignedToEditing() => IsEditingAssignedTo = true;
 
     private async Task OnSave()
     {
         IsEditing = false;
+        await SaveChanges();
+    }
+
+    private async Task OnSavePriority()
+    {
+        IsEditingPriority = false;
+        await SaveChanges();
+    }
+
+    private async Task OnSaveDueDate()
+    {
+        IsEditingDueDate = false;
+        await SaveChanges();
+    }
+
+    private async Task OnSaveAssignedTo()
+    {
+        IsEditingAssignedTo = false;
+        await SaveChanges();
+    }
+
+    private async Task SaveChanges()
+    {
         if (OnSaveTask.HasDelegate)
         {
             await OnSaveTask.InvokeAsync(Task);

@@ -24,9 +24,9 @@
         <DxGridDataColumn FieldName="Description" MinWidth="80" />
         <DxGridDataColumn FieldName="Status" MinWidth="80" />
         <DxGridDataColumn FieldName="Priority" MinWidth="200" />
-        <DxGridDataColumn Caption="Assigned To" MinWidth="150"/>
-        <DxGridDataColumn FieldName="CreatedById" MinWidth="150" />
-        <DxGridDataColumn FieldName="ProjectId" MinWidth="150" />
+        <DxGridDataColumn FieldName="AssignedTo.FullName" Caption="AssignedTo" MinWidth="150" />
+        <DxGridDataColumn FieldName="CreatedBy.FullName" Caption="CreatedBy" MinWidth="150" />
+        <DxGridDataColumn FieldName="Project.Name" Caption="Project" MinWidth="150" />
         <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
         <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
         <DxGridCommandColumn Width="30px">
@@ -66,8 +66,10 @@
 @code {
     IGrid Grid { get; set; }
     IEnumerable<TaskToDo> DataSource { get; set; }
+    List<User> Users { get; set; }
     protected override async Task OnInitializedAsync()
     {
+        Users = await TaskService.GetUsersAsync();
         DataSource = await TaskService.GetAllTasksToDoAsync();
     }
     void Grid_CustomizeEditModel(GridCustomizeEditModelEventArgs e)
