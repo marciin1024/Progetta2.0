@@ -3,9 +3,11 @@
 @rendermode InteractiveServer
 @inject TaskService TaskService
 
-<DxScheduler @bind-StartDate="@StartDate"
+<DxScheduler @ref="SchedulerItem" 
+             @bind-StartDate="@StartDate"
              DataStorage="@_dataStorage"
              @bind-ActiveViewType="@ActiveViewType"
+             AppointmentFormShowing="OnAppointmentFormShowing"
              AppointmentFormMode="SchedulerAppointmentFormMode.EditForm"
              CssClass="demo-sc-size">
     <DxSchedulerDayView VisibleTime="@VisibleTime"></DxSchedulerDayView>
@@ -21,6 +23,7 @@
 </DxScheduler>
 
 @code {
+    public DxScheduler SchedulerItem { get; set; }
     DateTime StartDate { get; set; } = DateTime.Today;
     SchedulerViewType ActiveViewType { get; set; } = SchedulerViewType.WorkWeek;
     DxSchedulerTimeSpanRange VisibleTime = new DxSchedulerTimeSpanRange(TimeSpan.FromHours(8), TimeSpan.FromHours(19));
@@ -43,8 +46,9 @@
                 Label = 1,
                 StartDate = startAt,
                 EndDate = endDate,
+                Description = taskToDo.Description,
                 Recurrence = string.Format("<RecurrenceInfo Start=\"{0}\" Month=\"{1}\" DayNumber=\"{2}\" WeekOfMonth=\"0\" Id=\"{3}\" Type=\"3\" />", ToString(startAt), startAt.Month, startAt.Day, Guid.NewGuid()),
-                ResourceId = 0
+                ResourceId = 0,
             };
             appointments.Add(appointment);
         }
@@ -63,8 +67,11 @@
                     Description = "Description",
                     LabelId = "Label",
                     StatusId = "Status",
-                    RecurrenceInfo = "Recurrence"
-                    
+                    RecurrenceInfo = "Recurrence",
+                    // CustomFieldMappings = [
+                    //         new DxSchedulerCustomFieldMapping { Name = "", Mapping = "" }
+                    // ]
+
                 }
             };
     }
@@ -72,6 +79,24 @@
     private static string ToString(DateTime dateTime)
     {
         return dateTime.ToString(CultureInfo.InvariantCulture);
+    }
+
+    void OnAppointmentFormShowing(SchedulerAppointmentFormEventArgs args)
+    {
+        args.FormInfo = new CustomAppointmentFormInfo(args.Appointment, DataStorage, SchedulerItem);
+    }
+
+    public class CustomAppointmentFormInfo : SchedulerAppointmentFormInfo
+    {
+        public CustomAppointmentFormInfo(DxSchedulerAppointmentItem AppointmentItem, DxSchedulerDataStorage DataStorage, DxScheduler scheduler)
+            : base(AppointmentItem, DataStorage, scheduler) {}
+
+
+        public override string Subject
+        {
+            get { return base.Subject; }
+            set { base.Subject = value; }
+        }
     }
 
     public class Appointment

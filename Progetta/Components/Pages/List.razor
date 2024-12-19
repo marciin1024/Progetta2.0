@@ -11,6 +11,7 @@
         KeyFieldName="Id"
         ValidationEnabled="false"
         EditMode="GridEditMode.EditCell"
+        RowDoubleClick="DoubleClickHandle"
         EditModelSaving="Grid_EditModelSaving"
         DataItemDeleting="Grid_DataItemDeleting"
         CustomizeEditModel="Grid_CustomizeEditModel"
@@ -24,9 +25,16 @@
         <DxGridDataColumn FieldName="Description" MinWidth="80" />
         <DxGridDataColumn FieldName="Status" MinWidth="80" />
         <DxGridDataColumn FieldName="Priority" MinWidth="200" />
-        <DxGridDataColumn FieldName="AssignedTo.FullName" Caption="AssignedTo" MinWidth="150" />
-        <DxGridDataColumn FieldName="CreatedBy.FullName" Caption="CreatedBy" MinWidth="150" />
-        <DxGridDataColumn FieldName="Project.Name" Caption="Project" MinWidth="150" />
+        <DxGridDataColumn FieldName="AssignedToId" Caption="AssignedTo" MinWidth="150">
+            <EditSettings>
+                <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
+            </EditSettings>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="CreatedById" Caption="CreatedBy" MinWidth="150">
+            <EditSettings>
+                <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
+            </EditSettings>
+        </DxGridDataColumn>
         <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
         <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
         <DxGridCommandColumn Width="30px">
@@ -57,6 +65,15 @@
                               RenderStyle="ButtonRenderStyle.Link" />
                 </div>
             </CellEditTemplate>
+        </DxGridCommandColumn>
+        <DxGridCommandColumn Width="30px">
+            <CellDisplayTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton Text="Formularz"
+                              RenderStyle="ButtonRenderStyle.Primary"
+                              Click="@(() => { })" />
+                </div>
+            </CellDisplayTemplate>
         </DxGridCommandColumn>
     </Columns>
 </DxGrid>
@@ -99,6 +116,11 @@
     async Task UpdateDataAsync()
     {
         DataSource = await TaskService.GetAllTasksToDoAsync();
+    }
+
+    async Task DoubleClickHandle(GridRowClickEventArgs args)
+    {
+        
     }
 }
 

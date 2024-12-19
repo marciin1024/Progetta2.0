@@ -2,9 +2,12 @@
 @rendermode InteractiveServer
 @inject TaskService TaskService
 
-<div @onclick="@(() => PopupVisible = true)">
+<div @onclick="@(() => OnClickShow())">
     <p>CLICK TO SHOW A POP-UP WINDOW</p>
 </div>
+
+
+<DxButton Click="@((e) => OnClickShow())" Text="TEST" RenderStyle="ButtonRenderStyle.Primary" />
 
 @if (taskList == null)
 {
@@ -14,7 +17,7 @@ else
 {
 
     <DxPopup @bind-Visible="@PopupVisible"
-             HeaderText="Edit Contact"
+             HeaderText="Edytuj Zadanie"
              ShowFooter="true">
         <BodyTemplate Context="PopupContext">
             <div style="padding-top: 1rem; padding-bottom: 1rem">
@@ -34,12 +37,14 @@ else
                         </Template>
                     </DxFormLayoutItem>
                     <DxFormLayoutItem Caption="Priorytet:" ColSpanMd="12">
-
+                      @*   <Template>
+                            <PriorityComboBox @Priorities="@Priorities" @TaskPriority="@TaskPriority"></PriorityComboBox>
+                        </Template> *@
                     </DxFormLayoutItem>
                     <DxFormLayoutItem Caption="Status:" ColSpanMd="12">
-                        <Template>
-                            <StatusComboBox></StatusComboBox>
-                        </Template>
+                      @*   <Template>
+                            <StatusComboBox @Status="@Status" @Statuses="@Statuses"></StatusComboBox>
+                        </Template> *@
                     </DxFormLayoutItem>
                     <DxFormLayoutItem Caption="Projekt:" ColSpanMd="12">
 
@@ -87,6 +92,13 @@ else
 }
 
 @code {
+
+    public List<TaskPriority> Priorities { get; set; }
+    public TaskPriority TaskPriority { get; set; }
+
+    public List<Status> Statuses { get; set; }
+    public Status Status { get; set; }
+
     bool PopupVisible { get; set; } = false;
     private List<TaskToDo>? taskList;
     List<Status> statuses { get; set; }
@@ -109,6 +121,13 @@ else
         task = taskList?.FirstOrDefault(); // Przypisz pierwszy element lub null, jeśli lista jest pusta
         statuses = await TaskService.GetStatusesAsync();
 
+        Priorities = await TaskService.GetPrioritiesAsync();
+        TaskPriority = Priorities.Contains(TaskPriority.Medium) ? TaskPriority.Medium : Priorities.FirstOrDefault();
+
+        Statuses = await TaskService.GetStatusesAsync();
+        Status = Statuses.Contains(Status.ToDo) ? Status.ToDo : Statuses.FirstOrDefault();
+
+        base.OnInitialized();
     }
 
     void OnStatusChanged(Status status)
@@ -128,5 +147,10 @@ else
         // Można tu dodatkowo zapisać zmiany lub wykonać inne akcje
         SaveTaskChanges();
         PopupVisible = false; // Zamknięcie popupu
+    }
+
+    void OnClickShow()
+    {
+        PopupVisible = true;
     }
 }

@@ -118,6 +118,8 @@ html, body {
     margin: -0.125rem;
 }
 
-
+.dropzone {
+    overflow: auto;
+}
 
 
