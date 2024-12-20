@@ -3,31 +3,109 @@
 @rendermode InteractiveServer
 @inject TaskService TaskService
 
-<DxScheduler @ref="SchedulerItem" 
+<DxScheduler @rendermode="InteractiveAuto"
              @bind-StartDate="@StartDate"
              DataStorage="@_dataStorage"
+             ValidateEditForm="true"
              @bind-ActiveViewType="@ActiveViewType"
-             AppointmentFormShowing="OnAppointmentFormShowing"
-             AppointmentFormMode="SchedulerAppointmentFormMode.EditForm"
+             @bind-AppointmentFormMode="@AppointmentFormMode"
+             AppointmentUpdated="OnAppointmentUpdate"
              CssClass="demo-sc-size">
-    <DxSchedulerDayView VisibleTime="@VisibleTime"></DxSchedulerDayView>
-    <DxSchedulerWorkWeekView VisibleTime="@VisibleTime"></DxSchedulerWorkWeekView>
-    <DxSchedulerWeekView VisibleTime="@VisibleTime"></DxSchedulerWeekView>
-    <DxSchedulerMonthView CellMinWidth="120"></DxSchedulerMonthView>
-    <DxSchedulerTimelineView Duration="@(TimeSpan.FromDays(7))" CellMinWidth="100">
-        <Scales>
-            <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Week"></DxSchedulerTimeScale>
-            <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day"></DxSchedulerTimeScale>
-        </Scales>
-    </DxSchedulerTimelineView>
+    <Views>
+        <DxSchedulerDayView VisibleTime="@VisibleTime"></DxSchedulerDayView>
+      @*   <DxSchedulerWorkWeekView VisibleTime="@VisibleTime"></DxSchedulerWorkWeekView>
+        <DxSchedulerWeekView VisibleTime="@VisibleTime"></DxSchedulerWeekView>
+        <DxSchedulerMonthView CellMinWidth="120"></DxSchedulerMonthView>
+        <DxSchedulerTimelineView Duration="@(TimeSpan.FromDays(7))" CellMinWidth="100">
+            <Scales>
+                <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Week"></DxSchedulerTimeScale>
+                <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day"></DxSchedulerTimeScale>
+            </Scales>
+        </DxSchedulerTimelineView> *@
+    </Views>
+    <AppointmentFormHeaderTemplate>
+        <div class="popup-text-header">@context.Subject</div>
+        <DxSchedulerSaveAppointmentChangesButton></DxSchedulerSaveAppointmentChangesButton>
+        <DxSchedulerDeleteAppointmentButton Text="@null"></DxSchedulerDeleteAppointmentButton>
+        <DxSchedulerDiscardAppointmentChangesButton></DxSchedulerDiscardAppointmentChangesButton>
+        @if (AppointmentFormMode == SchedulerAppointmentFormMode.Both)
+        {
+            <DxButton Click="@(() => {})"
+                      IconCssClass="btn-icon-back"
+                      RenderStyle="ButtonRenderStyle.None"
+                      CssClass="dxbl-btn-tool">
+            </DxButton>
+        }
+    </AppointmentFormHeaderTemplate>
+    <AppointmentFormLayout Context="formInfo">
+        <DxSchedulerSubjectFormLayoutItem></DxSchedulerSubjectFormLayoutItem>
+        <DxSchedulerAllDayFormLayoutItem></DxSchedulerAllDayFormLayoutItem>
+        <DxSchedulerStartDateFormLayoutItem></DxSchedulerStartDateFormLayoutItem>
+        <DxSchedulerStartTimeFormLayoutItem></DxSchedulerStartTimeFormLayoutItem>
+        <DxSchedulerEndDateFormLayoutItem></DxSchedulerEndDateFormLayoutItem>
+        <DxSchedulerEndTimeFormLayoutItem></DxSchedulerEndTimeFormLayoutItem>
+        <DxSchedulerRepeatFormLayoutItem></DxSchedulerRepeatFormLayoutItem>
+        <DxSchedulerLabelFormLayoutItem></DxSchedulerLabelFormLayoutItem>
+        <DxSchedulerDescriptionFormLayoutItem></DxSchedulerDescriptionFormLayoutItem>
+        <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
+            <Template>
+                <ValidationSummary />
+            </Template>
+        </DxSchedulerCustomFormLayoutItem>
+    </AppointmentFormLayout>
+    <AppointmentCompactFormHeaderTemplate>
+        <div class="popup-text-header">@context.Subject</div>
+        <DxSchedulerSaveAppointmentChangesButton></DxSchedulerSaveAppointmentChangesButton>
+        <DxSchedulerDeleteAppointmentButton Text="@null"></DxSchedulerDeleteAppointmentButton>
+        <DxSchedulerDiscardAppointmentChangesButton></DxSchedulerDiscardAppointmentChangesButton>
+        @if (AppointmentFormMode == SchedulerAppointmentFormMode.Both)
+        {
+            <DxSchedulerShowAppointmentEditFormButton></DxSchedulerShowAppointmentEditFormButton>
+        }
+    </AppointmentCompactFormHeaderTemplate>
+    <AppointmentCompactFormLayout Context="formInfo">
+        <DxSchedulerSubjectFormLayoutItem></DxSchedulerSubjectFormLayoutItem>
+        <DxSchedulerAllDayFormLayoutItem></DxSchedulerAllDayFormLayoutItem>
+        <DxSchedulerStartDateFormLayoutItem></DxSchedulerStartDateFormLayoutItem>
+        <DxSchedulerStartTimeFormLayoutItem></DxSchedulerStartTimeFormLayoutItem>
+        <DxSchedulerEndDateFormLayoutItem></DxSchedulerEndDateFormLayoutItem>
+        <DxSchedulerEndTimeFormLayoutItem></DxSchedulerEndTimeFormLayoutItem>
+        <DxSchedulerRepeatFormLayoutItem></DxSchedulerRepeatFormLayoutItem>
+        <DxSchedulerLabelFormLayoutItem></DxSchedulerLabelFormLayoutItem>
+        <DxSchedulerDescriptionFormLayoutItem></DxSchedulerDescriptionFormLayoutItem>
+        <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
+            <Template>
+                <ValidationSummary />
+            </Template>
+        </DxSchedulerCustomFormLayoutItem>
+    </AppointmentCompactFormLayout>
 </DxScheduler>
 
 @code {
     public DxScheduler SchedulerItem { get; set; }
     DateTime StartDate { get; set; } = DateTime.Today;
-    SchedulerViewType ActiveViewType { get; set; } = SchedulerViewType.WorkWeek;
+    SchedulerAppointmentFormMode AppointmentFormMode { get; set; } = SchedulerAppointmentFormMode.Both;
+    SchedulerViewType ActiveViewType { get; set; } = SchedulerViewType.Day;
     DxSchedulerTimeSpanRange VisibleTime = new DxSchedulerTimeSpanRange(TimeSpan.FromHours(8), TimeSpan.FromHours(19));
     private DxSchedulerDataStorage _dataStorage;
+
+
+    public async Task OnAppointmentUpdate(DxSchedulerAppointmentItem item)
+    {
+        if (item.Id is int id)
+        {
+            TaskToDo taskToDo = await TaskService.GetTaskToDoByIdAsync(id);
+
+            taskToDo.Name = item.Subject;
+            taskToDo.Description = item.Description;
+            taskToDo.StartAt = item.Start;
+            taskToDo.DueDate = item.End;
+            taskToDo.Priority = (TaskPriority)(int)item.LabelId;
+
+            await TaskService.UpdateTaskToDoAsync(taskToDo);
+        }
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -41,6 +119,7 @@
 
             Appointment appointment = new Appointment
             {
+                Id = taskToDo.Id,
                 AppointmentType = 1,
                 Caption = taskToDo.Name,
                 Label = 1,
@@ -59,6 +138,7 @@
                 AppointmentsSource = appointments,
                 AppointmentMappings = new DxSchedulerAppointmentMappings()
                 {
+                    Id = "Id",
                     Type = "AppointmentType",
                     Start = "StartDate",
                     End = "EndDate",
@@ -85,7 +165,7 @@
     {
         args.FormInfo = new CustomAppointmentFormInfo(args.Appointment, DataStorage, SchedulerItem);
     }
-
+    
     public class CustomAppointmentFormInfo : SchedulerAppointmentFormInfo
     {
         public CustomAppointmentFormInfo(DxSchedulerAppointmentItem AppointmentItem, DxSchedulerDataStorage DataStorage, DxScheduler scheduler)
@@ -102,6 +182,7 @@
     public class Appointment
     {
         public Appointment() { }
+        public int Id { get; set; }
         public int AppointmentType { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

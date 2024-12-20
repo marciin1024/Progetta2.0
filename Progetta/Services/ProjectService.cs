@@ -63,5 +63,14 @@ namespace Progetta.Services
             _context.Projects.Remove(proj);
             await _context.SaveChangesAsync();
         }
+
+        // 7. Pobranie wszystkich kategorii
+        public async Task<List<Category>> GetCategoriesAsync()
+        {
+            return await _context.Category
+                .Include(x => x.Projects)
+                .OrderBy(u => u.Name)
+                .ToListAsync();
+        }
     }
 }

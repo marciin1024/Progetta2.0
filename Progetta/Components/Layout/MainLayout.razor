@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
+@inject ProjectService ProjectService
 
 <div class="page">
     <Drawer DrawerHeader="drawerHeader" DrawerFooter="drawerFooter">
@@ -28,6 +29,8 @@
 </div>
 
 @code {
+    List<Category> categories { get; set; } = new List<Category>();
+
     [SupplyParameterFromQuery(Name = UrlGenerator.ToggleSidebarName)]
     public bool ToggledSidebar { get; set; }
 
@@ -46,6 +49,4 @@
             <DxButton Text="Demos" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="footer-button" RenderStyle="@ButtonRenderStyle.Light" IconCssClass="icon demos-icon"></DxButton>
         </NavLink>
     </div>;
-
- 
 }
