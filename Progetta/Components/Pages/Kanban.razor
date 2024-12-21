@@ -1,6 +1,8 @@
 ﻿@page "/kanban"
 @rendermode InteractiveServer
 @inject TaskService TaskService
+@inject UserService UserService
+
 
 <h3>Kanban</h3>
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -85,7 +87,7 @@
     private async Task LoadData()
     {
         taskList = await TaskService.GetAllTasksToDoAsync();
-        availableUsers = await TaskService.GetUsersAsync();
+        availableUsers = await UserService.GetUsersAsync();
         StateHasChanged();
     }
 

@@ -95,12 +95,5 @@ namespace Progetta.Services
                 .Distinct()
                 .ToListAsync();
         }
-
-        public async Task<List<User>> GetUsersAsync()
-        {
-            return await _context.Users
-                .OrderBy(u => u.FirstName)
-                .ToListAsync();
-        }
     }
 }

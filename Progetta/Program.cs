@@ -17,6 +17,7 @@ builder.Services.AddMvc();
 
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<UserService>();
 
 builder.Services.AddDbContext<ProjectContext>(
     option => option.UseSqlServer(builder.Configuration.GetConnectionString("ProjectConnectionString"))

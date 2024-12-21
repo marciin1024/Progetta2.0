@@ -13,7 +13,7 @@
              CssClass="demo-sc-size">
     <Views>
         <DxSchedulerDayView VisibleTime="@VisibleTime"></DxSchedulerDayView>
-      @*   <DxSchedulerWorkWeekView VisibleTime="@VisibleTime"></DxSchedulerWorkWeekView>
+         <DxSchedulerWorkWeekView VisibleTime="@VisibleTime"></DxSchedulerWorkWeekView>
         <DxSchedulerWeekView VisibleTime="@VisibleTime"></DxSchedulerWeekView>
         <DxSchedulerMonthView CellMinWidth="120"></DxSchedulerMonthView>
         <DxSchedulerTimelineView Duration="@(TimeSpan.FromDays(7))" CellMinWidth="100">
@@ -21,7 +21,7 @@
                 <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Week"></DxSchedulerTimeScale>
                 <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day"></DxSchedulerTimeScale>
             </Scales>
-        </DxSchedulerTimelineView> *@
+        </DxSchedulerTimelineView> 
     </Views>
     <AppointmentFormHeaderTemplate>
         <div class="popup-text-header">@context.Subject</div>

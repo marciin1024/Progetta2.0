@@ -3,6 +3,7 @@
 @using Progetta.Services
 
 @inject TaskService TaskService
+@inject UserService UserService
 
 <DxComboBox Data="@AssignedUsers"
             SearchMode="@SearchMode"
@@ -25,7 +26,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        AssignedUsers = await TaskService.GetUsersAsync();
+        AssignedUsers = await UserService.GetUsersAsync();
         SelectedUser = AssignedUsers.FirstOrDefault();
     }
 

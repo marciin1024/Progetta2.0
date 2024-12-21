@@ -2,6 +2,7 @@
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 @inject TaskService TaskService
+@inject UserService UserService
 <h3>Lista</h3>
 <br />
 
@@ -30,7 +31,7 @@
         HighlightRowOnHover="true">
 
     <Columns>
-        <DxGridDataColumn FieldName="Name" MinWidth="50" />
+        <DxGridDataColumn FieldName="Name" MinWidth="350" />
         <DxGridDataColumn FieldName="Description" MinWidth="80" />
         <DxGridDataColumn FieldName="Status" MinWidth="80" />
         <DxGridDataColumn FieldName="Priority" MinWidth="200" />
@@ -44,6 +45,7 @@
                 <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
             </EditSettings>
         </DxGridDataColumn>
+        <DxGridDataColumn FieldName="ProjectId" Width="10%" MinWidth="80" />
         <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
         <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
         <DxGridCommandColumn Width="30px">
@@ -75,15 +77,6 @@
                 </div>
             </CellEditTemplate>
         </DxGridCommandColumn>
-        <DxGridCommandColumn Width="30px">
-            <CellDisplayTemplate>
-                <div class="grid-cell-align-center">
-                    <DxButton Text="Formularz"
-                              RenderStyle="ButtonRenderStyle.Primary"
-                              Click="@(() => { })" />
-                </div>
-            </CellDisplayTemplate>
-        </DxGridCommandColumn>
     </Columns>
 </DxGrid>
 
@@ -95,7 +88,7 @@
     List<User> Users { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        Users = await TaskService.GetUsersAsync();
+        Users = await UserService.GetUsersAsync();
         DataSource = await TaskService.GetAllTasksToDoAsync();
     }
     void Grid_CustomizeEditModel(GridCustomizeEditModelEventArgs e)
