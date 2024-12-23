@@ -22,6 +22,11 @@ namespace Progetta.Entities
         public ICollection<UserProject> CollaboratedProjects { get; set; }
         public ICollection<TaskToDo> AssignedTasks { get; set; }
         public ICollection<TaskToDo> CreatedTasks { get; set; }
+
+        public override string ToString()
+        {
+            return FullName;
+        }
     }
 
     public enum UserRole

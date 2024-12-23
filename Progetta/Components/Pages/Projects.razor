@@ -1,12 +1,12 @@
-﻿@using DevExpress.Blazor
-@using Microsoft.AspNetCore.Components.Web
-@using Progetta.Entities
-@using Progetta.Services
+﻿@page "/projects"
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
 @inject ProjectService ProjectService
 
 <div class="cw-240">
     <h5 class="card-title">Projekty</h5>
-    <DxTreeView AllowSelectNodes="true"s
+    <DxTreeView AllowSelectNodes="true"
                 AnimationType="LayoutAnimationType.Slide">
         <Nodes>
             @foreach (var category in categories)
@@ -38,7 +38,7 @@
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if(firstRender)
+        if (firstRender)
         {
             categories = await ProjectService.GetCategoriesAsync() ?? new List<Category>();
             StateHasChanged();

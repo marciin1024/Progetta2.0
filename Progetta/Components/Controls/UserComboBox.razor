@@ -1,7 +1,4 @@
-﻿@using DevExpress.Blazor
-@using Progetta.Entities
-@using Progetta.Services
-
+﻿@rendermode InteractiveServer
 @inject TaskService TaskService
 @inject UserService UserService
 
@@ -10,16 +7,20 @@
             SearchFilterCondition="@SearchFilterCondition"
             SearchTextParseMode="@SearchTextParseMode"
             Value="@SelectedUser"
-            ValueChanged="@((User user) => SelectedUserChanged(user))"
+            ValueChanged="@((User user) => SelectedUserChanged?.Invoke(user))"
             TextFieldName="FullName"
             CssClass="cw-480"
             InputId="cbAssignedUsers" />
 
-<p>Wybrany użytkownik: @SelectedUser?.FullName</p>
-
 @code {
+    [Parameter]
+    public User SelectedUser { get; set; }
+
+    [Parameter]
+    public Action<User> SelectedUserChanged { get; set; }
+
     List<User> AssignedUsers { get; set; }
-    User SelectedUser { get; set; }
+
     ListSearchMode SearchMode { get; set; } = ListSearchMode.AutoSearch;
     ListSearchFilterCondition SearchFilterCondition { get; set; } = ListSearchFilterCondition.Contains;
     ListSearchTextParseMode SearchTextParseMode { get; set; } = ListSearchTextParseMode.GroupWordsByAnd;
@@ -33,10 +34,5 @@
     string GetSelectedValueDescription()
     {
         return SelectedUser != null ? SelectedUser.FullName : "null";
-    }
-
-    void SelectedUserChanged(User user)
-    {
-        SelectedUser = user;
     }
 }

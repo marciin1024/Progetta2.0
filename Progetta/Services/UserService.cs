@@ -5,16 +5,17 @@ namespace Progetta.Services
 {
     public class UserService
     {
-        private readonly ProjectContext _context;
+        private readonly IDbContextFactory<ProjectContext> _contextFactory;
 
-        public UserService(ProjectContext context)
+        public UserService(IDbContextFactory<ProjectContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<List<User>> GetUsersAsync()
         {
-            return await _context.Users
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return await context.Users
                 .OrderBy(u => u.FirstName)
                 .ToListAsync();
         }

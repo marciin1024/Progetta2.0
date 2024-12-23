@@ -103,6 +103,11 @@ html, body {
     mask-image: url("../images/icons/delete.svg");
 }
 
+.grid-icon-open {
+    -webkit-mask-image: url("../images/icons/dots-vertical.svg");
+    mask-image: url("../images/icons/dots-vertical.svg");
+}
+
 .grid-icon {
     display: inline-block;
     width: 1em;

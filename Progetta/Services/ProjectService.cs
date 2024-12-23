@@ -7,25 +7,28 @@ namespace Progetta.Services
 {
     public class ProjectService
     {
-        private readonly ProjectContext _context;
+        private readonly IDbContextFactory<ProjectContext> _contextFactory;
 
-        public ProjectService(ProjectContext context)
+        public ProjectService(IDbContextFactory<ProjectContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         // 1. Dodawanie projektu
         public async Task AddProjectAsync(Project project)
         {
+            using ProjectContext context = await _contextFactory.CreateDbContextAsync();
+
             project.CreatedAt = DateTime.UtcNow;
-            _context.Projects.Add(project);
-            await _context.SaveChangesAsync();
+            context.Projects.Add(project);
+            await context.SaveChangesAsync();
         }
 
         // 2. Pobranie wszystkich projektów
         public async Task<List<Project>> GetAllProjectsAsync()
         {
-            return await _context.Projects
+            using ProjectContext context = await _contextFactory.CreateDbContextAsync();
+            return await context.Projects
                 .OrderBy(t => t.CreatedAt)
                 .ToListAsync();
         }
@@ -33,7 +36,8 @@ namespace Progetta.Services
         // 3. Aktualizacja projektu
         public async Task UpdateProjectAsync(Project project)
         {
-            var existingProject = await _context.Projects.FindAsync(project.Id);
+            using ProjectContext context = await _contextFactory.CreateDbContextAsync();
+            var existingProject = await context.Projects.FindAsync(project.Id);
             if (existingProject == null)
             {
                 throw new Exception("Project not found.");
@@ -48,26 +52,28 @@ namespace Progetta.Services
             existingProject.CategoryId = project.CategoryId;
             existingProject.StartAt = project.StartAt;
 
-            _context.Projects.Update(existingProject);
-            await _context.SaveChangesAsync();
+            context.Projects.Update(existingProject);
+            await context.SaveChangesAsync();
         }
 
         // 4. Usuwanie projektu
         public async Task DeleteProjectAsync(Project project)
         {
-            var proj = await _context.Projects.FindAsync(project.Id);
+            using ProjectContext context = await _contextFactory.CreateDbContextAsync();
+            var proj = await context.Projects.FindAsync(project.Id);
             if (proj == null)
             {
                 throw new Exception("Project not found.");
             }
-            _context.Projects.Remove(proj);
-            await _context.SaveChangesAsync();
+            context.Projects.Remove(proj);
+            await context.SaveChangesAsync();
         }
 
         // 7. Pobranie wszystkich kategorii
         public async Task<List<Category>> GetCategoriesAsync()
         {
-            return await _context.Category
+            using ProjectContext context = await _contextFactory.CreateDbContextAsync();
+            return await context.Category
                 .Include(x => x.Projects)
                 .OrderBy(u => u.Name)
                 .ToListAsync();

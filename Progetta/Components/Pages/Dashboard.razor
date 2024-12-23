@@ -57,6 +57,7 @@
 <br />
 <br />
 
+<div style="display: flex; justify-content: center; gap: 200px;">
 <DxPieChart Data="@CategoriesData"
             Diameter="diameter"
             InnerDiameter="innerDiameter"
@@ -90,6 +91,46 @@
                    Orientation="Orientation.Horizontal" />
 </DxPieChart>
 
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+
+<DxPieChart Data="@TasksData"
+            Diameter="diameter"
+            InnerDiameter="innerDiameter"
+            StartAngle="startAngle"
+            SegmentDirection="segmentDirection"
+            T="TaskToDo">
+    <DxPieChartSeries T="TaskToDo"
+                      TArgument="string"
+                      TValue="int"
+                      ArgumentField="@(task => task.DueDate.HasValue ? task.DueDate.Value.ToString("MMMM yyyy") : "No Due Date")"
+                      ValueField="@(task => 1)"
+                      SummaryMethod="Enumerable.Sum">
+        <DxChartSeriesLabel Visible="showLabels"
+                            Position="labelPosition">
+            <DxChartSeriesLabelConnector Visible="true" />
+        </DxChartSeriesLabel>
+    </DxPieChartSeries>
+    <DxChartTooltip Enabled="true"
+                    Position="RelativePosition.Outside">
+        <div style="margin: 0.75rem">
+            <div class="fw-bold">@context.Point.Argument</div>
+            <div>Projects: @($"{context.Point.Value:#,0.}")</div>
+        </div>
+    </DxChartTooltip>
+    <DxChartTitle Text="Tasks by End Date">
+        <DxChartSubTitle Text="Total Tasks per Month" />
+    </DxChartTitle>
+    <DxChartLegend HorizontalAlignment="HorizontalAlignment.Center"
+                   VerticalAlignment="VerticalEdge.Bottom"
+                   Position="RelativePosition.Outside"
+                   Orientation="Orientation.Horizontal" />
+</DxPieChart>
+</div>
 <br />
 <br />
 <br />

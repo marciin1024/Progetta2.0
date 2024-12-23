@@ -21,7 +21,6 @@
         KeyFieldName="Id"
         ValidationEnabled="false"
         EditMode="GridEditMode.EditCell"
-        RowDoubleClick="DoubleClickHandle"
         EditModelSaving="Grid_EditModelSaving"
         DataItemDeleting="Grid_DataItemDeleting"
         CustomizeEditModel="Grid_CustomizeEditModel"
@@ -48,6 +47,28 @@
         <DxGridDataColumn FieldName="ProjectId" Width="10%" MinWidth="80" />
         <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
         <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
+        <DxGridCommandColumn Width="30px">
+            <HeaderTemplate>
+                <div class="grid-cell-align-center">
+                
+                </div>
+            </HeaderTemplate>
+            <CellDisplayTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton IconCssClass="grid-icon grid-icon-open"
+                              RenderStyle="ButtonRenderStyle.None"
+                              Click="@(() => ShowForm(context.VisibleIndex))" />
+                </div>
+            </CellDisplayTemplate>
+            <CellEditTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton Enabled="false"
+                              CssClass="grid-disabled-button"
+                              IconCssClass="grid-icon grid-icon-open"
+                              RenderStyle="ButtonRenderStyle.Link" />
+                </div>
+            </CellEditTemplate>
+        </DxGridCommandColumn>
         <DxGridCommandColumn Width="30px">
             <HeaderTemplate>
                 <div class="grid-cell-align-center">
@@ -80,9 +101,12 @@
     </Columns>
 </DxGrid>
 
-<ProjectSelection></ProjectSelection>
+<TaskToDoForm Task="Task" Visible="TaskToDoFormVisible" SetVisiblity="SetVisiblity" />
 
 @code {
+    public bool TaskToDoFormVisible { get; set; } = false;
+    public TaskToDo Task { get; set; }
+
     IGrid Grid { get; set; }
     IEnumerable<TaskToDo> DataSource { get; set; }
     List<User> Users { get; set; }
@@ -91,6 +115,13 @@
         Users = await UserService.GetUsersAsync();
         DataSource = await TaskService.GetAllTasksToDoAsync();
     }
+
+    public void SetVisiblity(bool visibility)
+    {
+        TaskToDoFormVisible = visibility;
+        StateHasChanged();
+    }
+
     void Grid_CustomizeEditModel(GridCustomizeEditModelEventArgs e)
     {
         if (e.IsNew)
@@ -101,28 +132,36 @@
             newTask.CreatedAt = DateTime.UtcNow;
         }
     }
+
     async Task Grid_EditModelSaving(GridEditModelSavingEventArgs e)
     {
         var editableTask = (TaskToDo)e.EditModel;
         if (e.IsNew)
+        {
             await TaskService.AddTaskAsync(editableTask);
+        }
         else
+        {
             await TaskService.UpdateTaskToDoAsync(editableTask);
+        }
         await UpdateDataAsync();
     }
+
     async Task Grid_DataItemDeleting(GridDataItemDeletingEventArgs e)
     {
         await TaskService.DeleteTaskToDoAsync((TaskToDo)e.DataItem);
         await UpdateDataAsync();
     }
+
     async Task UpdateDataAsync()
     {
         DataSource = await TaskService.GetAllTasksToDoAsync();
     }
 
-    async Task DoubleClickHandle(GridRowClickEventArgs args)
+    private void ShowForm(int index)
     {
-        
+        Task = Grid.GetDataItem(index) as TaskToDo;
+        TaskToDoFormVisible = true;
     }
 }
 

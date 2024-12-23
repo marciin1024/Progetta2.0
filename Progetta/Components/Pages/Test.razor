@@ -9,14 +9,8 @@
 
 <DxButton Click="@((e) => OnClickShow())" Text="TEST" RenderStyle="ButtonRenderStyle.Primary" />
 
-@if (taskList == null)
-{
-    <p>Loading tasks...</p>
-}
-else
-{
-
     <DxPopup @bind-Visible="@PopupVisible"
+
              HeaderText="Edytuj Zadanie"
              ShowFooter="true">
         <BodyTemplate Context="PopupContext">
@@ -37,21 +31,23 @@ else
                         </Template>
                     </DxFormLayoutItem>
                     <DxFormLayoutItem Caption="Priorytet:" ColSpanMd="12">
-                      @*   <Template>
-                            <PriorityComboBox @Priorities="@Priorities" @TaskPriority="@TaskPriority"></PriorityComboBox>
-                        </Template> *@
+                        <Template>
+                            <PriorityComboBox></PriorityComboBox>
+                        </Template>
                     </DxFormLayoutItem>
                     <DxFormLayoutItem Caption="Status:" ColSpanMd="12">
-                      @*   <Template>
-                            <StatusComboBox @Status="@Status" @Statuses="@Statuses"></StatusComboBox>
-                        </Template> *@
+                        <Template>
+                            <StatusComboBox></StatusComboBox>
+                        </Template>
                     </DxFormLayoutItem>
                     <DxFormLayoutItem Caption="Projekt:" ColSpanMd="12">
-
+                        <Template>
+                            <ProjectComboBox></ProjectComboBox>
+                        </Template>
                     </DxFormLayoutItem>
                     <DxFormLayoutItem Caption="Przydzielono do:" ColSpanMd="12">
                         <Template>
-
+                            <UserComboBox></UserComboBox>
                         </Template>
                     </DxFormLayoutItem>
                     <DxFormLayoutItem Caption="Data rozpoczęcia:" ColSpanMd="12">
@@ -89,20 +85,23 @@ else
                       Click="OnOkButtonClick" />
         </FooterContentTemplate>
     </DxPopup>
-}
 
 @code {
 
-    public List<TaskPriority> Priorities { get; set; }
     public TaskPriority TaskPriority { get; set; }
-
-    public List<Status> Statuses { get; set; }
     public Status Status { get; set; }
 
     bool PopupVisible { get; set; } = false;
     private List<TaskToDo>? taskList;
-    List<Status> statuses { get; set; }
     private TaskToDo task;
+
+    protected override async Task OnInitializedAsync()
+    {
+        taskList = await TaskService.GetAllTasksToDoAsync();
+
+        task = taskList?.FirstOrDefault(); // Przypisz pierwszy element lub null, jeśli lista jest pusta
+        base.OnInitialized();
+    }
 
     void OnStartAtChanged(DateTime? date)
     {
@@ -112,22 +111,6 @@ else
     void OnDueDateChanged(DateTime? date)
     {
         task.DueDate = date;
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        taskList = await TaskService.GetAllTasksToDoAsync();
-
-        task = taskList?.FirstOrDefault(); // Przypisz pierwszy element lub null, jeśli lista jest pusta
-        statuses = await TaskService.GetStatusesAsync();
-
-        Priorities = await TaskService.GetPrioritiesAsync();
-        TaskPriority = Priorities.Contains(TaskPriority.Medium) ? TaskPriority.Medium : Priorities.FirstOrDefault();
-
-        Statuses = await TaskService.GetStatusesAsync();
-        Status = Statuses.Contains(Status.ToDo) ? Status.ToDo : Statuses.FirstOrDefault();
-
-        base.OnInitialized();
     }
 
     void OnStatusChanged(Status status)

@@ -7,25 +7,27 @@ namespace Progetta.Services
 {
     public class TaskService
     {
-        private readonly ProjectContext _context;
+        IDbContextFactory<ProjectContext> _contextFactory;
 
-        public TaskService(ProjectContext context)
+        public TaskService(IDbContextFactory<ProjectContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         // 1. Dodawanie zadania
         public async Task AddTaskAsync(TaskToDo task)
         {
+            using ProjectContext context = _contextFactory.CreateDbContext();
             task.CreatedAt = DateTime.UtcNow;
-            _context.TasksToDo.Add(task);
-            await _context.SaveChangesAsync();
+            context.TasksToDo.Add(task);
+            await context.SaveChangesAsync();
         }
 
         // 2. Pobranie wszystkich zadań
         public async Task<List<TaskToDo>> GetAllTasksToDoAsync()
         {
-            return await _context.TasksToDo
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return await context.TasksToDo
                 .OrderBy(t => t.Status)  
                 .ThenByDescending(t => t.Id)  
                 .ToListAsync();
@@ -33,7 +35,8 @@ namespace Progetta.Services
         // 3. Pobranie zadania po ID
         public async Task<TaskToDo> GetTaskToDoByIdAsync(int id)
         {
-            return await _context.TasksToDo
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return await context.TasksToDo
                 .Include(t => t.Project)
                 .Include(t => t.AssignedTo)
                 .Include(t => t.Comments)
@@ -44,7 +47,8 @@ namespace Progetta.Services
         // 4. Aktualizacja zadania
         public async Task UpdateTaskToDoAsync(TaskToDo task)
         {
-            var existingTask = await _context.TasksToDo.FindAsync(task.Id);
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            var existingTask = await context.TasksToDo.FindAsync(task.Id);
             if (existingTask == null)
             {
                 throw new Exception("TaskToDo not found.");
@@ -61,27 +65,29 @@ namespace Progetta.Services
             existingTask.CreatedById = task.CreatedById;
             existingTask.StartAt = task.StartAt;
 
-            _context.TasksToDo.Update(existingTask);
-            await _context.SaveChangesAsync();
+            context.TasksToDo.Update(existingTask);
+            await context.SaveChangesAsync();
         }
 
         // 5. Usuwanie zadania
         public async Task DeleteTaskToDoAsync(TaskToDo taskToDo)
         {
-            var task = await _context.TasksToDo.FindAsync(taskToDo.Id);
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            var task = await context.TasksToDo.FindAsync(taskToDo.Id);
             if (task == null)
             {
                 throw new Exception("TaskToDo not found.");
             }
 
-            _context.TasksToDo.Remove(task);
-            await _context.SaveChangesAsync();
+            context.TasksToDo.Remove(task);
+            await context.SaveChangesAsync();
         }
 
         // 6. Pobranie wszystkich statusów
         public async Task<List<Status>> GetStatusesAsync()
         {
-            return await _context.TasksToDo
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return await context.TasksToDo
                 .Select(t => t.Status)
                 .Distinct()
                 .ToListAsync();
@@ -90,7 +96,8 @@ namespace Progetta.Services
         // 7. Pobranie wszystkich priorytetów
         public async Task<List<TaskPriority>> GetPrioritiesAsync()
         {
-            return await _context.TasksToDo
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return await context.TasksToDo
                 .Select(t => t.Priority)
                 .Distinct()
                 .ToListAsync();
