@@ -2,6 +2,7 @@
 @using System.Globalization
 @rendermode InteractiveServer
 @inject TaskService TaskService
+@inject UserService UserService
 
 <DxScheduler @rendermode="InteractiveAuto"
              @bind-StartDate="@StartDate"
@@ -10,6 +11,7 @@
              @bind-ActiveViewType="@ActiveViewType"
              @bind-AppointmentFormMode="@AppointmentFormMode"
              AppointmentUpdated="OnAppointmentUpdate"
+             AppointmentFormShowing="OnAppointmentFormShowing"
              CssClass="demo-sc-size">
     <Views>
         <DxSchedulerDayView VisibleTime="@VisibleTime"></DxSchedulerDayView>
@@ -44,7 +46,6 @@
         <DxSchedulerStartTimeFormLayoutItem></DxSchedulerStartTimeFormLayoutItem>
         <DxSchedulerEndDateFormLayoutItem></DxSchedulerEndDateFormLayoutItem>
         <DxSchedulerEndTimeFormLayoutItem></DxSchedulerEndTimeFormLayoutItem>
-        <DxSchedulerRepeatFormLayoutItem></DxSchedulerRepeatFormLayoutItem>
         <DxSchedulerLabelFormLayoutItem></DxSchedulerLabelFormLayoutItem>
         <DxSchedulerDescriptionFormLayoutItem></DxSchedulerDescriptionFormLayoutItem>
         <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
@@ -70,8 +71,13 @@
         <DxSchedulerStartTimeFormLayoutItem></DxSchedulerStartTimeFormLayoutItem>
         <DxSchedulerEndDateFormLayoutItem></DxSchedulerEndDateFormLayoutItem>
         <DxSchedulerEndTimeFormLayoutItem></DxSchedulerEndTimeFormLayoutItem>
-        <DxSchedulerRepeatFormLayoutItem></DxSchedulerRepeatFormLayoutItem>
-        <DxSchedulerLabelFormLayoutItem></DxSchedulerLabelFormLayoutItem>
+        <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
+            <Template>
+                <DxComboBox Data="AllUsers"
+                            @bind-Value="@(((CustomAppointmentFormInfo)formInfo).AssignedTo)">
+            </DxComboBox>
+            </Template>
+        </DxSchedulerCustomFormLayoutItem>
         <DxSchedulerDescriptionFormLayoutItem></DxSchedulerDescriptionFormLayoutItem>
         <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
             <Template>
@@ -82,6 +88,8 @@
 </DxScheduler>
 
 @code {
+    List<User> AllUsers = new List<User>();
+
     public DxScheduler SchedulerItem { get; set; }
     DateTime StartDate { get; set; } = DateTime.Today;
     SchedulerAppointmentFormMode AppointmentFormMode { get; set; } = SchedulerAppointmentFormMode.Both;
@@ -102,6 +110,8 @@
             taskToDo.DueDate = item.End;
             taskToDo.Priority = (TaskPriority)(int)item.LabelId;
 
+            var assignedTo = item.CustomFields["AssignedTo"];
+
             await TaskService.UpdateTaskToDoAsync(taskToDo);
         }
     }
@@ -109,6 +119,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        AllUsers = await UserService.GetUsersAsync();
+
         var tasksToDo = await TaskService.GetAllTasksToDoAsync();
 
         List<Appointment> appointments = new List<Appointment>();
@@ -120,18 +132,18 @@
             Appointment appointment = new Appointment
             {
                 Id = taskToDo.Id,
-                AppointmentType = 1,
-                Caption = taskToDo.Name,
-                Label = 1,
+                AppointmentType = 0,
+                Caption = $"{taskToDo.Name}\n\r{(taskToDo.AssignedTo?.FullName ?? string.Empty)}",
+                Label = (int)taskToDo.AssignedTo.LabelId,
                 StartDate = startAt,
                 EndDate = endDate,
                 Description = taskToDo.Description,
-                Recurrence = string.Format("<RecurrenceInfo Start=\"{0}\" Month=\"{1}\" DayNumber=\"{2}\" WeekOfMonth=\"0\" Id=\"{3}\" Type=\"3\" />", ToString(startAt), startAt.Month, startAt.Day, Guid.NewGuid()),
                 ResourceId = 0,
+                AssignedTo = taskToDo.AssignedTo
             };
+            
             appointments.Add(appointment);
         }
-
 
         _dataStorage = new DxSchedulerDataStorage()
             {
@@ -147,10 +159,9 @@
                     Description = "Description",
                     LabelId = "Label",
                     StatusId = "Status",
-                    RecurrenceInfo = "Recurrence",
-                    // CustomFieldMappings = [
-                    //         new DxSchedulerCustomFieldMapping { Name = "", Mapping = "" }
-                    // ]
+                    CustomFieldMappings = [
+                        new DxSchedulerCustomFieldMapping { Name = "AssignedTo", Mapping = "AssignedTo" }
+                    ]
 
                 }
             };
@@ -165,7 +176,7 @@
     {
         args.FormInfo = new CustomAppointmentFormInfo(args.Appointment, DataStorage, SchedulerItem);
     }
-    
+
     public class CustomAppointmentFormInfo : SchedulerAppointmentFormInfo
     {
         public CustomAppointmentFormInfo(DxSchedulerAppointmentItem AppointmentItem, DxSchedulerDataStorage DataStorage, DxScheduler scheduler)
@@ -176,6 +187,12 @@
         {
             get { return base.Subject; }
             set { base.Subject = value; }
+        }
+
+        public User AssignedTo
+        {
+            get { return (User)CustomFields["AssignedTo"]; }
+            set { CustomFields["AssignedTo"] = value; }
         }
     }
 
@@ -195,6 +212,7 @@
         public int? ResourceId { get; set; }
         public string Resources { get; set; }
         public bool Accepted { get; set; }
+        public User AssignedTo { get; set; }
     }
 
     public DxSchedulerDataStorage DataStorage => _dataStorage;

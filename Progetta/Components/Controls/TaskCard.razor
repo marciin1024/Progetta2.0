@@ -38,32 +38,14 @@
             }
         </div>
 
-        <!-- Due Date -->
-        <div class="d-flex align-items-center mb-2">
-            <small class="text-muted me-2">Termin:</small>
-            @if (IsEditingDueDate)
-            {
-                <input type="date" class="form-control form-control-sm"
-                       @bind="Task.DueDate"
-                       @onblur="OnSaveDueDate" />
-            }
-            else
-            {
-                <span @onclick="EnableDueDateEditing">
-                    @(Task.DueDate?.ToShortDateString() ?? "Brak terminu")
-                </span>
-            }
-        </div>
-
         <!-- Assigned To -->
         <div class="d-flex align-items-center">
             <small class="text-muted me-2">Przypisane do:</small>
             @if (IsEditingAssignedTo)
             {
                 <select class="form-select form-select-sm" style="width: auto;"
-                        @bind="Task.AssignedToId"
+                        @bind="Task.AssignedTo.Id"
                         @onblur="OnSaveAssignedTo">
-                    <option value="">Brak przypisania</option>
                     @if (Users != null)
                     {
                         @foreach (var user in Users)
@@ -132,12 +114,6 @@
     private async Task OnSavePriority()
     {
         IsEditingPriority = false;
-        await SaveChanges();
-    }
-
-    private async Task OnSaveDueDate()
-    {
-        IsEditingDueDate = false;
         await SaveChanges();
     }
 

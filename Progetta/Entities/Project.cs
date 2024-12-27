@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using DevExpress.Blazor;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Progetta.Entities
@@ -24,6 +25,10 @@ namespace Progetta.Entities
 
         public ICollection<TaskToDo> Tasks { get; set;}
         public ICollection<UserProject> UserProjects { get; set; }
-        
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

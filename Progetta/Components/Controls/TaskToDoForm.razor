@@ -47,42 +47,72 @@
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Przydzielono do:" ColSpanMd="12">
                     <Template>
-                        <UserComboBox
-                            SelectedUser="Task.AssignedTo"
-                            SelectedUserChanged="(user) => {
-                                Task.AssignedTo = user;
-                                Task.AssignedToId = user?.Id;
-                            }"
+                        <UserComboBox SelectedUser="Task.AssignedTo"
+                            SelectedUserChanged="(user) => Task.AssignedTo = user"
                         ></UserComboBox>
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Data rozpoczęcia:" ColSpanMd="12">
                     <Template>
-                        <DxDateEdit Date="@Task.StartAt"
-                                    DateChanged="@((DateTime? date) => OnStartAtChanged(date))" />
+                        <DxDateEdit @bind-Date="@Task.StartAt"
+                                    TimeSectionVisible="true"
+                                    TimeSectionScrollPickerFormat="HH mm"/>
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Termin wykonania:" ColSpanMd="12">
                     <Template>
-                        <DxDateEdit Date="@Task.DueDate"
-                                    DateChanged="@((DateTime? date) => OnDueDateChanged(date))" />
+                        <DxDateEdit @bind-Date="@Task.DueDate"
+                                    TimeSectionVisible="true"
+                                    TimeSectionScrollPickerFormat="HH mm" />
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Dodał:" ColSpanMd="12">
                     <Template>
-
+                        <span>@Task.CreatedBy</span>
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Data utworzenia:" ColSpanMd="12">
                     <Template>
-
+                        <span>@Task.CreatedAt</span>
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Data ostatniej aktualizacji:" ColSpanMd="12">
                     <Template>
-
+                        <span>@Task.UpdatedAt</span>
                     </Template>
                 </DxFormLayoutItem>
+                <DxSchedulerCustomFormLayoutItem>
+                    <Template>
+                        <div>
+                            @if (Task.Comments is not null)
+                            {
+                                @foreach (Comment comment in Task.Comments)
+                                {
+                                    <div>
+                                        <p>
+                                            @comment.User?.FullName
+                                        </p>
+                                        <p>
+                                            @comment.CreatedAt
+                                        </p>
+                                        <p>
+                                            @comment.Message
+                                        </p>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        <DxFormLayout CaptionPosition=@CaptionPosition.Vertical>
+                            <DxFormLayoutItem Caption="Message" ColSpanMd="12" BeginRow="true">
+                                <DxTextBox Name="Message" @bind-Text="Message" />
+                            </DxFormLayoutItem>
+                            <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
+                                <DxButton CssClass="w-100" Text="Add" Click="OnAddCommentClick"></DxButton>
+                            </DxFormLayoutItem>
+                        </DxFormLayout>
+                    </Template>
+                </DxSchedulerCustomFormLayoutItem>
             </DxFormLayout>
         </div>
     </BodyTemplate>
@@ -97,12 +127,15 @@
     public TaskPriority TaskPriority { get; set; }
     public Status Status { get; set; }
 
+    public string Message { get; set; }
 
     [Parameter]
     public bool Visible { get; set; } = false;
 
     [Parameter]
     public TaskToDo Task { get; set; }
+
+    User AssignedTo { get; set; }
 
     [Parameter]
     public Action<bool> SetVisiblity { get; set; }
@@ -115,6 +148,16 @@
     void OnDueDateChanged(DateTime? date)
     {
         Task.DueDate = date;
+    }
+
+    void OnAddCommentClick()
+    {
+        Comment comment = new Comment
+        {
+            Message = Message
+        };
+
+        Task.Comments.Add(comment);
     }
 
     void OnStatusChanged(Status status)

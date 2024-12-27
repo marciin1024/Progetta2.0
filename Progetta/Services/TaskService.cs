@@ -28,6 +28,9 @@ namespace Progetta.Services
         {
             using ProjectContext context = _contextFactory.CreateDbContext();
             return await context.TasksToDo
+                .Include(x => x.AssignedTo)
+                .Include(x => x.Project)
+                .Include(x => x.Comments)
                 .OrderBy(t => t.Status)  
                 .ThenByDescending(t => t.Id)  
                 .ToListAsync();
@@ -61,8 +64,37 @@ namespace Progetta.Services
             existingTask.DueDate = task.DueDate;
             existingTask.UpdatedAt = DateTime.UtcNow;
             existingTask.ProjectId = task.ProjectId;
-            existingTask.AssignedToId = task.AssignedToId;
-            existingTask.CreatedById = task.CreatedById;
+            //existingTask.AssignedToId = task.AssignedToId;
+
+            if(task.AssignedTo is not null)
+            {
+                existingTask.AssignedTo = await context.Users.FindAsync(task.AssignedTo.Id);
+            }
+            else
+            {
+                existingTask.AssignedTo = null;
+            }
+
+            //existingTask.CreatedById = task.CreatedById;
+
+            if(task.CreatedBy is not null)
+            {
+                existingTask.CreatedBy = await context.Users.FindAsync(task.CreatedBy.Id);
+            }
+            else
+            {
+                existingTask.CreatedBy = null;
+            }
+
+            if(task.Project is not null)
+            {
+                existingTask.Project = await context.Projects.FindAsync(task.Project.Id);
+            }
+            else
+            {
+                existingTask.Project = null;
+            }
+
             existingTask.StartAt = task.StartAt;
 
             context.TasksToDo.Update(existingTask);

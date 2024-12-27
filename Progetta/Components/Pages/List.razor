@@ -3,6 +3,8 @@
 @rendermode InteractiveServer
 @inject TaskService TaskService
 @inject UserService UserService
+@inject ProjectService ProjectService
+
 <h3>Lista</h3>
 <br />
 
@@ -34,19 +36,35 @@
         <DxGridDataColumn FieldName="Description" MinWidth="80" />
         <DxGridDataColumn FieldName="Status" MinWidth="80" />
         <DxGridDataColumn FieldName="Priority" MinWidth="200" />
-        <DxGridDataColumn FieldName="AssignedToId" Caption="AssignedTo" MinWidth="150">
+        <DxGridDataColumn FieldName="AssignedTo" Caption="Assigned to" MinWidth="150">
+            <EditSettings>
+                <DxComboBoxSettings Data="Users" TextFieldName="FullName" />
+            </EditSettings>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="CreatedBy" Caption="CreatedBy" MinWidth="150">
             <EditSettings>
                 <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
             </EditSettings>
         </DxGridDataColumn>
-        <DxGridDataColumn FieldName="CreatedById" Caption="CreatedBy" MinWidth="150">
+        <DxGridDataColumn FieldName="Project" Width="10%" MinWidth="80">
             <EditSettings>
-                <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
+                <DxComboBoxSettings Data="Projects" ValueFieldName="Id" TextFieldName="Name" />
             </EditSettings>
         </DxGridDataColumn>
-        <DxGridDataColumn FieldName="ProjectId" Width="10%" MinWidth="80" />
-        <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
-        <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
+        <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" DisplayFormat="dd/MM/yyyy HH:mm">
+            <EditSettings>
+                <DxDateEditSettings TimeSectionVisible="true"
+                                    Mask="@DateTimeMask.ShortDateTime"
+                                    TimeSectionScrollPickerFormat="HH mm" />
+            </EditSettings>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" DisplayFormat="dd/MM/yyyy HH:mm">
+            <EditSettings>
+                <DxDateEditSettings TimeSectionVisible="true"
+                                    Mask="@DateTimeMask.ShortDateTime"
+                                    TimeSectionScrollPickerFormat="HH mm" />
+            </EditSettings>
+        </DxGridDataColumn>
         <DxGridCommandColumn Width="30px">
             <HeaderTemplate>
                 <div class="grid-cell-align-center">
@@ -109,10 +127,13 @@
 
     IGrid Grid { get; set; }
     IEnumerable<TaskToDo> DataSource { get; set; }
-    List<User> Users { get; set; }
+    List<User> Users { get; set; } = [];
+    List<Project> Projects { get; set; } = [];
+
     protected override async Task OnInitializedAsync()
     {
         Users = await UserService.GetUsersAsync();
+        Projects = await ProjectService.GetAllProjectsAsync();
         DataSource = await TaskService.GetAllTasksToDoAsync();
     }
 

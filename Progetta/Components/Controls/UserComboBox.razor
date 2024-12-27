@@ -28,7 +28,6 @@
     protected override async Task OnInitializedAsync()
     {
         AssignedUsers = await UserService.GetUsersAsync();
-        SelectedUser = AssignedUsers.FirstOrDefault();
     }
 
     string GetSelectedValueDescription()

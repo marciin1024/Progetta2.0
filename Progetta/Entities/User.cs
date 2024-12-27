@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Progetta.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Progetta.Entities
 {
@@ -14,6 +15,7 @@ namespace Progetta.Entities
         public string Email { get; set; }
         public string Password { get; set; }
         public UserRole Role { get; set; }
+        public LabelId LabelId { get; set; } = LabelId.Light;
 
         public string FullName => $"{FirstName} {LastName}";
 
