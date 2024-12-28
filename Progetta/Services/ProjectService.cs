@@ -29,6 +29,7 @@ namespace Progetta.Services
         {
             using ProjectContext context = await _contextFactory.CreateDbContextAsync();
             return await context.Projects
+                .Include(x => x.Category)
                 .OrderBy(t => t.CreatedAt)
                 .ToListAsync();
         }

@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject TaskService TaskService
 @inject UserService UserService
+@inject ProjectService ProjectService
 
 <div class="cw-480 ch-220">
     <DxTabs @bind-ActiveTabIndex="@ActiveTabIndex">
@@ -9,13 +10,13 @@
         <DxTab Text="Kanban"></DxTab>
         <DxTab Text="Kalendarz"></DxTab>
     </DxTabs>
-    <div class="card tabs-border-top-0 tabs-border-radius-top-0 " style="min-height: 190px">
+    <div class="card tabs-border-top-0 tabs-border-radius-top-0;" style="min-height: 190px; border: none">
         <div class="card-body">
             @switch (ActiveTabIndex)
             {
                 case 0:
                     <DxGrid @ref="Grid"
-                            PageSize="12"
+                            PageSize="20"
                             Data="DataSource"
                             KeyFieldName="Id"
                             ValidationEnabled="false"
@@ -43,7 +44,11 @@
                                     <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
                                 </EditSettings>
                             </DxGridDataColumn>
-                            <DxGridDataColumn FieldName="ProjectId" Width="10%" MinWidth="80" />
+                            <DxGridDataColumn FieldName="Project" Width="10%" MinWidth="80">
+                                <EditSettings>
+                                    <DxComboBoxSettings Data="Projects" ValueFieldName="Id" TextFieldName="Name" />
+                                </EditSettings>
+                            </DxGridDataColumn>
                             <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
                             <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
                             <DxGridCommandColumn Width="30px">
@@ -100,7 +105,6 @@
                     </DxGrid>
 
                     <TaskToDoForm Task="Task" Visible="TaskToDoFormVisible" SetVisiblity="SetVisiblity" />
-                    <List></List>
                     break;
                 case 1:
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -266,6 +270,7 @@
     int ActiveTabIndex { get; set; } = 1;
     public bool TaskToDoFormVisible { get; set; } = false;
     public TaskToDo Task { get; set; }
+    List<Project> Projects { get; set; } = [];
 
     private List<TaskToDo>? taskList;
     private List<User>? availableUsers;
@@ -288,6 +293,7 @@
         await LoadData();
         Users = await UserService.GetUsersAsync();
         DataSource = await TaskService.GetAllTasksToDoAsync();
+        Projects = await ProjectService.GetAllProjectsAsync();
 
         AllUsers = await UserService.GetUsersAsync();
 
