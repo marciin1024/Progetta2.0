@@ -4,7 +4,7 @@
 }
 
 ::deep .navigation-drawer > .dxbl-drawer-panel {
-    background-image: linear-gradient(180deg, var(--bs-primary) 0%, var(--bs-black) 150%);
+    background-color: #f2b84b
 }
 
 ::deep .dxbl-drawer .dxbl-drawer-content {
@@ -150,8 +150,13 @@
     display: none;
 }
 
+.logo{
+    width: 150px;
+    margin-top: -10px;
+}
+
 @media (max-width: 768px) {
-    ::deep .navigation-drawer > .dxbl-drawer-panel {
+    :: deep .navigation-drawer > .dxbl-drawer-panel {
         display: none;
     }
 

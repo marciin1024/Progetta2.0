@@ -4,7 +4,7 @@
 @inject ProjectService ProjectService
 
 <div class="page">
-    <Drawer DrawerHeader="drawerHeader" DrawerFooter="drawerFooter">
+    <Drawer DrawerHeader="drawerHeader">
         <DrawerBody>
             <div class="w-100">
                 <NavMenu></NavMenu>
@@ -36,7 +36,7 @@
     public bool ToggledSidebar { get; set; }
 
     private RenderFragment drawerHeader => @<div class="navigation-drawer-header">
-        <img class="logo" src="images/logo.svg" alt="DevExpress logo" />
+        <img class="logo" src="images/Progetta.png" alt="Progetta logo" />
         <NavLink href="@UrlGenerator.GetUrl(new Uri(NavigationManager.Uri).LocalPath, !ToggledSidebar)">
             <DxButton RenderStyle="@ButtonRenderStyle.Light" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="menu-button-nav" IconCssClass="@(ToggledSidebar ? "icon icon-close" : "icon icon-menu")"></DxButton>
         </NavLink>

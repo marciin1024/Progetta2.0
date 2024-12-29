@@ -1,0 +1,175 @@
+﻿@using System.Globalization
+@rendermode InteractiveServer
+@inject TaskService TaskService
+@inject UserService UserService
+@inject ProjectService ProjectService
+@inject NavigationManager Navigation
+
+<DxGrid @ref="Grid"
+        PageSize="20"
+        Data="DataSource"
+        KeyFieldName="Id"
+        ValidationEnabled="false"
+        EditMode="GridEditMode.EditCell"
+        EditModelSaving="Grid_EditModelSaving"
+        DataItemDeleting="Grid_DataItemDeleting"
+        CustomizeEditModel="Grid_CustomizeEditModel"
+        ColumnResizeMode="GridColumnResizeMode.NextColumn"
+        ShowGroupPanel="true"
+        TextWrapEnabled="false"
+        HighlightRowOnHover="true">
+
+    <Columns>
+        <DxGridDataColumn FieldName="Name" MinWidth="350" />
+        <DxGridDataColumn FieldName="Description" MinWidth="80" />
+        <DxGridDataColumn FieldName="Status" MinWidth="80" />
+        <DxGridDataColumn FieldName="Priority" MinWidth="200" />
+        <DxGridDataColumn FieldName="AssignedToId" Caption="AssignedTo" MinWidth="150">
+            <EditSettings>
+                <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
+            </EditSettings>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="CreatedById" Caption="CreatedBy" MinWidth="150">
+            <EditSettings>
+                <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
+            </EditSettings>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
+        <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
+        <DxGridCommandColumn Width="30px">
+            <HeaderTemplate>
+                <div class="grid-cell-align-center">
+                </div>
+            </HeaderTemplate>
+            <CellDisplayTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton IconCssClass="grid-icon grid-icon-open"
+                              RenderStyle="ButtonRenderStyle.None"
+                              Click="@(() => ShowForm(context.VisibleIndex))" />
+                </div>
+            </CellDisplayTemplate>
+            <CellEditTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton Enabled="false"
+                              CssClass="grid-disabled-button"
+                              IconCssClass="grid-icon grid-icon-open"
+                              RenderStyle="ButtonRenderStyle.Link" />
+                </div>
+            </CellEditTemplate>
+        </DxGridCommandColumn>
+        <DxGridCommandColumn Width="30px">
+            <HeaderTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton CssClass="grid-delete-btn"
+                              IconCssClass="grid-icon grid-icon-add"
+                              RenderStyle="ButtonRenderStyle.Link"
+                              aria-label="Add"
+                              Click="@(() => Grid.StartEditNewRowAsync())" />
+                </div>
+            </HeaderTemplate>
+            <CellDisplayTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton IconCssClass="grid-icon grid-icon-delete"
+                              CssClass="grid-delete-btn"
+                              RenderStyle="ButtonRenderStyle.Link"
+                              aria-label="Delete"
+                              Click="@(() => Grid.ShowRowDeleteConfirmation(context.VisibleIndex))" />
+                </div>
+            </CellDisplayTemplate>
+            <CellEditTemplate>
+                <div class="grid-cell-align-center">
+                    <DxButton Enabled="false"
+                              CssClass="grid-disabled-button"
+                              IconCssClass="grid-icon grid-icon-delete"
+                              aria-label="Delete"
+                              RenderStyle="ButtonRenderStyle.Link" />
+                </div>
+            </CellEditTemplate>
+        </DxGridCommandColumn>
+    </Columns>
+</DxGrid>
+
+<TaskToDoForm Task="Task" Visible="TaskToDoFormVisible" SetVisiblity="SetVisiblity" />
+
+
+@code {
+    IGrid Grid { get; set; }
+    IEnumerable<TaskToDo> DataSource { get; set; }
+    List<User> Users { get; set; }
+    
+    public bool TaskToDoFormVisible { get; set; } = false;
+    public TaskToDo Task { get; set; }
+    List<Project> Projects { get; set; } = [];
+    private int ProjectId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await UserService.GetUsersAsync();
+        DataSource = await TaskService.GetAllTasksToDoAsync();
+        Projects = await ProjectService.GetAllProjectsAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var uri = new Uri(Navigation.Uri);
+        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        if (queryParams.TryGetValue("projectId", out var projectIdValue) && int.TryParse(projectIdValue, out var projectId))
+        {
+            ProjectId = projectId;
+        }
+
+        await UpdateDataAsync();
+        StateHasChanged();
+    }
+
+    //lista
+
+    public void SetVisiblity(bool visibility)
+    {
+        TaskToDoFormVisible = visibility;
+        StateHasChanged();
+    }
+
+    void Grid_CustomizeEditModel(GridCustomizeEditModelEventArgs e)
+    {
+        if (e.IsNew)
+        {
+            var newTask = (TaskToDo)e.EditModel;
+            newTask.Name = "Nowe Zadanie";
+            newTask.ProjectId = ProjectId;
+            newTask.CreatedAt = DateTime.UtcNow;
+        }
+    }
+
+    async Task Grid_EditModelSaving(GridEditModelSavingEventArgs e)
+    {
+        var editableTask = (TaskToDo)e.EditModel;
+        if (e.IsNew)
+        {
+            await TaskService.AddTaskAsync(editableTask);
+        }
+        else
+        {
+            await TaskService.UpdateTaskToDoAsync(editableTask);
+        }
+        await UpdateDataAsync();
+    }
+
+    async Task Grid_DataItemDeleting(GridDataItemDeletingEventArgs e)
+    {
+        await TaskService.DeleteTaskToDoAsync((TaskToDo)e.DataItem);
+        await UpdateDataAsync();
+    }
+
+     async Task UpdateDataAsync()
+     {
+        DataSource = await TaskService.GetTasksByProjectIdAsync(ProjectId);
+     }
+
+    private void ShowForm(int index)
+    {
+        Task = Grid.GetDataItem(index) as TaskToDo;
+        TaskToDoFormVisible = true;
+    }
+}

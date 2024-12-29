@@ -15,7 +15,8 @@
                         {
                             @foreach (var project in category.Projects)
                             {
-                                <DxTreeViewNode Text="@project.Name" />
+                                        <DxTreeViewNode Text="@project.Name" 
+                                        NavigateUrl="@($"/projects?projectId={project.Id}")" />
                             }
                         }
                         else

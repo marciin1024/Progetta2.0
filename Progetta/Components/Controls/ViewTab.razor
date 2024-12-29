@@ -1,8 +1,33 @@
-﻿@using System.Globalization
+﻿@page "/projects"
+@using System.Globalization
 @rendermode InteractiveServer
 @inject TaskService TaskService
 @inject UserService UserService
 @inject ProjectService ProjectService
+@inject NavigationManager Navigation
+
+<div class="project-panel">
+    @if (project != null)
+    {
+        <div class="project-details">
+            <h3>@project.Name</h3>
+            <div class="details-container">
+                <div class="detail-item">
+                    <p><strong>Data rozpoczęcia:</strong></p>
+                    <p>@project.StartAt?.ToString("dd-MM-yyyy")</p>
+                </div>
+                <div class="detail-item">
+                    <p><strong>Termin zakończenia:</strong></p>
+                    <p>@project.DueDate?.ToString("dd-MM-yyyy")</p>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <p>Nie wybrano projektu.</p>
+    }
+</div>
 
 <div class="cw-480 ch-220">
     <DxTabs @bind-ActiveTabIndex="@ActiveTabIndex">
@@ -15,248 +40,13 @@
             @switch (ActiveTabIndex)
             {
                 case 0:
-                    <DxGrid @ref="Grid"
-                            PageSize="20"
-                            Data="DataSource"
-                            KeyFieldName="Id"
-                            ValidationEnabled="false"
-                            EditMode="GridEditMode.EditCell"
-                            EditModelSaving="Grid_EditModelSaving"
-                            DataItemDeleting="Grid_DataItemDeleting"
-                            CustomizeEditModel="Grid_CustomizeEditModel"
-                            ColumnResizeMode="GridColumnResizeMode.NextColumn"
-                            ShowGroupPanel="true"
-                            TextWrapEnabled="false"
-                            HighlightRowOnHover="true">
-
-                        <Columns>
-                            <DxGridDataColumn FieldName="Name" MinWidth="350" />
-                            <DxGridDataColumn FieldName="Description" MinWidth="80" />
-                            <DxGridDataColumn FieldName="Status" MinWidth="80" />
-                            <DxGridDataColumn FieldName="Priority" MinWidth="200" />
-                            <DxGridDataColumn FieldName="AssignedToId" Caption="AssignedTo" MinWidth="150">
-                                <EditSettings>
-                                    <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
-                                </EditSettings>
-                            </DxGridDataColumn>
-                            <DxGridDataColumn FieldName="CreatedById" Caption="CreatedBy" MinWidth="150">
-                                <EditSettings>
-                                    <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
-                                </EditSettings>
-                            </DxGridDataColumn>
-                            <DxGridDataColumn FieldName="Project" Width="10%" MinWidth="80">
-                                <EditSettings>
-                                    <DxComboBoxSettings Data="Projects" ValueFieldName="Id" TextFieldName="Name" />
-                                </EditSettings>
-                            </DxGridDataColumn>
-                            <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
-                            <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
-                            <DxGridCommandColumn Width="30px">
-                                <HeaderTemplate>
-                                    <div class="grid-cell-align-center">
-                                    </div>
-                                </HeaderTemplate>
-                                <CellDisplayTemplate>
-                                    <div class="grid-cell-align-center">
-                                        <DxButton IconCssClass="grid-icon grid-icon-open"
-                                                  RenderStyle="ButtonRenderStyle.None"
-                                                  Click="@(() => ShowForm(context.VisibleIndex))" />
-                                    </div>
-                                </CellDisplayTemplate>
-                                <CellEditTemplate>
-                                    <div class="grid-cell-align-center">
-                                        <DxButton Enabled="false"
-                                                  CssClass="grid-disabled-button"
-                                                  IconCssClass="grid-icon grid-icon-open"
-                                                  RenderStyle="ButtonRenderStyle.Link" />
-                                    </div>
-                                </CellEditTemplate>
-                            </DxGridCommandColumn>
-                            <DxGridCommandColumn Width="30px">
-                                <HeaderTemplate>
-                                    <div class="grid-cell-align-center">
-                                        <DxButton CssClass="grid-delete-btn"
-                                                  IconCssClass="grid-icon grid-icon-add"
-                                                  RenderStyle="ButtonRenderStyle.Link"
-                                                  aria-label="Add"
-                                                  Click="@(() => Grid.StartEditNewRowAsync())" />
-                                    </div>
-                                </HeaderTemplate>
-                                <CellDisplayTemplate>
-                                    <div class="grid-cell-align-center">
-                                        <DxButton IconCssClass="grid-icon grid-icon-delete"
-                                                  CssClass="grid-delete-btn"
-                                                  RenderStyle="ButtonRenderStyle.Link"
-                                                  aria-label="Delete"
-                                                  Click="@(() => Grid.ShowRowDeleteConfirmation(context.VisibleIndex))" />
-                                    </div>
-                                </CellDisplayTemplate>
-                                <CellEditTemplate>
-                                    <div class="grid-cell-align-center">
-                                        <DxButton Enabled="false"
-                                                  CssClass="grid-disabled-button"
-                                                  IconCssClass="grid-icon grid-icon-delete"
-                                                  aria-label="Delete"
-                                                  RenderStyle="ButtonRenderStyle.Link" />
-                                    </div>
-                                </CellEditTemplate>
-                            </DxGridCommandColumn>
-                        </Columns>
-                    </DxGrid>
-
-                    <TaskToDoForm Task="Task" Visible="TaskToDoFormVisible" SetVisiblity="SetVisiblity" />
+                    <ProjectListView></ProjectListView>
                     break;
                 case 1:
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <button type="button" class="btn btn-primary" @onclick="AddTask">
-                            <i class="bi bi-plus-lg"></i> Dodaj zadanie
-                        </button>
-
-                        <!-- Filtry -->
-                        <div class="d-flex gap-3">
-                            <select class="form-select" @bind="selectedPriority">
-                                <option value="">Wszystkie priorytety</option>
-                                @foreach (TaskPriority priority in Enum.GetValues(typeof(TaskPriority)))
-                                {
-                                    <option value="@priority">@priority</option>
-                                }
-                            </select>
-
-                            <select class="form-select" @bind="selectedUserId">
-                                <option value="">Wszyscy użytkownicy</option>
-                                @if (availableUsers != null)
-                                {
-                                    @foreach (var user in availableUsers)
-                                    {
-                                        <option value="@user.Id">@user.FullName</option>
-                                    }
-                                }
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row py-4 h-75">
-                        @foreach (Status status in Enum.GetValues(typeof(Status)))
-                        {
-                            <div class="col-4 h-100">
-                                <div class="d-flex justify-content-between align-items-center bg-light-subtle p-3">
-                                    <h5>@status</h5>
-                                    <span class="badge bg-secondary">
-                                        @(GetFilteredTasks(status).Count())
-                                    </span>
-                                </div>
-                                <div class="dropzone bg-light p-3 border border-1 rounded h-100"
-                                     ondragover="event.preventDefault();"
-                                     @ondrop="@(() => OnDrop(status))">
-                                    @if (taskList == null)
-                                    {
-                                        <div class="d-flex justify-content-center align-items-center h-100">
-                                            <div class="spinner-border text-primary" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        @foreach (var task in GetFilteredTasks(status))
-                                        {
-                                            <TaskCard Task="@task"
-                                                      Users="@availableUsers"
-                                                      OnSaveTask="@HandleTaskSave"
-                                                      OnDeleteTask="@HandleTaskDelete"
-                                                      OnDragStart="@HandleDragStart"
-                                                      CssClass="@GetTaskCardClass(task)" />
-                                        }
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-
+                    <ProjectKanbanView></ProjectKanbanView>
                     break;
                 case 2:
-                    <DxScheduler @rendermode="InteractiveAuto"
-                                 @bind-StartDate="@StartDate"
-                                 DataStorage="@_dataStorage"
-                                 ValidateEditForm="true"
-                                 @bind-ActiveViewType="@ActiveViewType"
-                                 @bind-AppointmentFormMode="@AppointmentFormMode"
-                                 AppointmentUpdated="OnAppointmentUpdate"
-                                 AppointmentFormShowing="OnAppointmentFormShowing"
-                                 CssClass="demo-sc-size">
-                        <Views>
-                            <DxSchedulerDayView VisibleTime="@VisibleTime"></DxSchedulerDayView>
-                            <DxSchedulerWorkWeekView VisibleTime="@VisibleTime"></DxSchedulerWorkWeekView>
-                            <DxSchedulerWeekView VisibleTime="@VisibleTime"></DxSchedulerWeekView>
-                            <DxSchedulerMonthView CellMinWidth="120"></DxSchedulerMonthView>
-                            <DxSchedulerTimelineView Duration="@(TimeSpan.FromDays(7))" CellMinWidth="100">
-                                <Scales>
-                                    <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Week"></DxSchedulerTimeScale>
-                                    <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day"></DxSchedulerTimeScale>
-                                </Scales>
-                            </DxSchedulerTimelineView>
-                        </Views>
-                        <AppointmentFormHeaderTemplate>
-                            <div class="popup-text-header">@context.Subject</div>
-                            <DxSchedulerSaveAppointmentChangesButton></DxSchedulerSaveAppointmentChangesButton>
-                            <DxSchedulerDeleteAppointmentButton Text="@null"></DxSchedulerDeleteAppointmentButton>
-                            <DxSchedulerDiscardAppointmentChangesButton></DxSchedulerDiscardAppointmentChangesButton>
-                            @if (AppointmentFormMode == SchedulerAppointmentFormMode.Both)
-                            {
-                                <DxButton Click="@(() => {})"
-                                          IconCssClass="btn-icon-back"
-                                          RenderStyle="ButtonRenderStyle.None"
-                                          CssClass="dxbl-btn-tool">
-                                </DxButton>
-                            }
-                        </AppointmentFormHeaderTemplate>
-                        <AppointmentFormLayout Context="formInfo">
-                            <DxSchedulerSubjectFormLayoutItem></DxSchedulerSubjectFormLayoutItem>
-                            <DxSchedulerAllDayFormLayoutItem></DxSchedulerAllDayFormLayoutItem>
-                            <DxSchedulerStartDateFormLayoutItem></DxSchedulerStartDateFormLayoutItem>
-                            <DxSchedulerStartTimeFormLayoutItem></DxSchedulerStartTimeFormLayoutItem>
-                            <DxSchedulerEndDateFormLayoutItem></DxSchedulerEndDateFormLayoutItem>
-                            <DxSchedulerEndTimeFormLayoutItem></DxSchedulerEndTimeFormLayoutItem>
-                            <DxSchedulerLabelFormLayoutItem></DxSchedulerLabelFormLayoutItem>
-                            <DxSchedulerDescriptionFormLayoutItem></DxSchedulerDescriptionFormLayoutItem>
-                            <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
-                                <Template>
-                                    <ValidationSummary />
-                                </Template>
-                            </DxSchedulerCustomFormLayoutItem>
-                        </AppointmentFormLayout>
-                        <AppointmentCompactFormHeaderTemplate>
-                            <div class="popup-text-header">@context.Subject</div>
-                            <DxSchedulerSaveAppointmentChangesButton></DxSchedulerSaveAppointmentChangesButton>
-                            <DxSchedulerDeleteAppointmentButton Text="@null"></DxSchedulerDeleteAppointmentButton>
-                            <DxSchedulerDiscardAppointmentChangesButton></DxSchedulerDiscardAppointmentChangesButton>
-                            @if (AppointmentFormMode == SchedulerAppointmentFormMode.Both)
-                            {
-                                <DxSchedulerShowAppointmentEditFormButton></DxSchedulerShowAppointmentEditFormButton>
-                            }
-                        </AppointmentCompactFormHeaderTemplate>
-                        <AppointmentCompactFormLayout Context="formInfo">
-                            <DxSchedulerSubjectFormLayoutItem></DxSchedulerSubjectFormLayoutItem>
-                            <DxSchedulerAllDayFormLayoutItem></DxSchedulerAllDayFormLayoutItem>
-                            <DxSchedulerStartDateFormLayoutItem></DxSchedulerStartDateFormLayoutItem>
-                            <DxSchedulerStartTimeFormLayoutItem></DxSchedulerStartTimeFormLayoutItem>
-                            <DxSchedulerEndDateFormLayoutItem></DxSchedulerEndDateFormLayoutItem>
-                            <DxSchedulerEndTimeFormLayoutItem></DxSchedulerEndTimeFormLayoutItem>
-                            <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
-                                <Template>
-                                    <DxComboBox Data="AllUsers"
-                                                @bind-Value="@(((CustomAppointmentFormInfo)formInfo).AssignedTo)">
-                                    </DxComboBox>
-                                </Template>
-                            </DxSchedulerCustomFormLayoutItem>
-                            <DxSchedulerDescriptionFormLayoutItem></DxSchedulerDescriptionFormLayoutItem>
-                            <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
-                                <Template>
-                                    <ValidationSummary />
-                                </Template>
-                            </DxSchedulerCustomFormLayoutItem>
-                        </AppointmentCompactFormLayout>
-                    </DxScheduler>
+                    <ProjectSchedulerView></ProjectSchedulerView>
                     break;
             }
         </div>
@@ -264,287 +54,20 @@
 </div>
 
 @code {
-    IGrid Grid { get; set; }
-    IEnumerable<TaskToDo> DataSource { get; set; }
-    List<User> Users { get; set; }
-    int ActiveTabIndex { get; set; } = 1;
-    public bool TaskToDoFormVisible { get; set; } = false;
-    public TaskToDo Task { get; set; }
-    List<Project> Projects { get; set; } = [];
+    int ActiveTabIndex { get; set; } = 0;
+    Project project;
+    private int ProjectId { get; set; }
 
-    private List<TaskToDo>? taskList;
-    private List<User>? availableUsers;
-    private TaskToDo? draggedTask;
-    private string? selectedPriority;
-    private string? selectedUserId;
-
-    List<User> AllUsers = new List<User>();
-    public DxScheduler SchedulerItem { get; set; }
-    DateTime StartDate { get; set; } = DateTime.Today;
-    SchedulerAppointmentFormMode AppointmentFormMode { get; set; } = SchedulerAppointmentFormMode.Both;
-    SchedulerViewType ActiveViewType { get; set; } = SchedulerViewType.Day;
-    DxSchedulerTimeSpanRange VisibleTime = new DxSchedulerTimeSpanRange(TimeSpan.FromHours(8), TimeSpan.FromHours(19));
-    private DxSchedulerDataStorage _dataStorage;
-
-
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        await LoadData();
-        Users = await UserService.GetUsersAsync();
-        DataSource = await TaskService.GetAllTasksToDoAsync();
-        Projects = await ProjectService.GetAllProjectsAsync();
+        var uri = new Uri(Navigation.Uri);
+        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
 
-        AllUsers = await UserService.GetUsersAsync();
-
-        var tasksToDo = await TaskService.GetAllTasksToDoAsync();
-
-        List<Appointment> appointments = new List<Appointment>();
-        foreach (TaskToDo taskToDo in tasksToDo)
+        if (queryParams.TryGetValue("projectId", out var projectIdValue) && int.TryParse(projectIdValue, out var projectId))
         {
-            DateTime startAt = taskToDo.StartAt ?? DateTime.Now;
-            DateTime endDate = taskToDo.DueDate ?? DateTime.Now;
-
-            Appointment appointment = new Appointment
-                {
-                    Id = taskToDo.Id,
-                    AppointmentType = 0,
-                    Caption = $"{taskToDo.Name}\n\r{(taskToDo.AssignedTo?.FullName ?? string.Empty)}",
-                    Label = (int)taskToDo.AssignedTo.LabelId,
-                    StartDate = startAt,
-                    EndDate = endDate,
-                    Description = taskToDo.Description,
-                    ResourceId = 0,
-                    AssignedTo = taskToDo.AssignedTo
-                };
-
-            appointments.Add(appointment);
+            ProjectId = projectId;
         }
-
-        _dataStorage = new DxSchedulerDataStorage()
-            {
-                AppointmentsSource = appointments,
-                AppointmentMappings = new DxSchedulerAppointmentMappings()
-                {
-                    Id = "Id",
-                    Type = "AppointmentType",
-                    Start = "StartDate",
-                    End = "EndDate",
-                    Subject = "Caption",
-                    AllDay = "AllDay",
-                    Description = "Description",
-                    LabelId = "Label",
-                    StatusId = "Status",
-                    CustomFieldMappings = [
-                                new DxSchedulerCustomFieldMapping { Name = "AssignedTo", Mapping = "AssignedTo" }
-                            ]
-
-                }
-            };
-    }
-
-    //lista
-
-    public void SetVisiblity(bool visibility)
-    {
-        TaskToDoFormVisible = visibility;
+        project = await ProjectService.GetProjectByIdAsync(ProjectId);
         StateHasChanged();
     }
-
-    void Grid_CustomizeEditModel(GridCustomizeEditModelEventArgs e)
-    {
-        if (e.IsNew)
-        {
-            var newTask = (TaskToDo)e.EditModel;
-            newTask.Name = "Nowe Zadanie";
-            newTask.ProjectId = 1;
-            newTask.CreatedAt = DateTime.UtcNow;
-        }
-    }
-
-    async Task Grid_EditModelSaving(GridEditModelSavingEventArgs e)
-    {
-        var editableTask = (TaskToDo)e.EditModel;
-        if (e.IsNew)
-        {
-            await TaskService.AddTaskAsync(editableTask);
-        }
-        else
-        {
-            await TaskService.UpdateTaskToDoAsync(editableTask);
-        }
-        await UpdateDataAsync();
-    }
-
-    async Task Grid_DataItemDeleting(GridDataItemDeletingEventArgs e)
-    {
-        await TaskService.DeleteTaskToDoAsync((TaskToDo)e.DataItem);
-        await UpdateDataAsync();
-    }
-
-    async Task UpdateDataAsync()
-    {
-        DataSource = await TaskService.GetAllTasksToDoAsync();
-    }
-
-    private void ShowForm(int index)
-    {
-        Task = Grid.GetDataItem(index) as TaskToDo;
-        TaskToDoFormVisible = true;
-    }
-
-
-//kanban
-
-    private async Task LoadData()
-    {
-        taskList = await TaskService.GetAllTasksToDoAsync();
-        availableUsers = await UserService.GetUsersAsync();
-        StateHasChanged();
-    }
-
-    private IEnumerable<TaskToDo> GetFilteredTasks(Status status)
-    {
-        if (taskList == null) return Enumerable.Empty<TaskToDo>();
-
-        var filteredTasks = taskList.Where(t => t.Status == status);
-
-        if (!string.IsNullOrEmpty(selectedPriority) && Enum.TryParse<TaskPriority>(selectedPriority, out var priority))
-        {
-            filteredTasks = filteredTasks.Where(t => t.Priority == priority);
-        }
-
-        if (!string.IsNullOrEmpty(selectedUserId) && int.TryParse(selectedUserId, out var userId))
-        {
-            filteredTasks = filteredTasks.Where(t => t.AssignedToId == userId);
-        }
-
-        return filteredTasks;
-    }
-
-    private string GetTaskCardClass(TaskToDo task)
-    {
-        return task.Priority switch
-        {
-            TaskPriority.High => "alert-danger",
-            TaskPriority.Medium => "alert-warning",
-            TaskPriority.Low => "alert-success",
-            _ => "alert-primary"
-        };
-    }
-
-    private void HandleDragStart(TaskToDo task)
-    {
-        draggedTask = task;
-    }
-
-    private async Task OnDrop(Status newStatus)
-    {
-        if (draggedTask != null)
-        {
-            draggedTask.Status = newStatus;
-            draggedTask.UpdatedAt = DateTime.UtcNow;
-            await HandleTaskSave(draggedTask);
-            draggedTask = null;
-        }
-    }
-
-    private async Task AddTask()
-    {
-        var newTask = new TaskToDo
-            {
-                Name = "Nowe zadanie",
-                ProjectId = 1,
-                CreatedAt = DateTime.UtcNow
-            };
-
-        await TaskService.AddTaskAsync(newTask);
-        await LoadData();
-    }
-
-    private async Task HandleTaskSave(TaskToDo task)
-    {
-        task.UpdatedAt = DateTime.UtcNow;
-        await TaskService.UpdateTaskToDoAsync(task);
-        await LoadData();
-    }
-
-    private async Task HandleTaskDelete(TaskToDo task)
-    {
-        await TaskService.DeleteTaskToDoAsync(task);
-        await LoadData();
-    }
-
-    //scheduler
-
-    
-
-
-    public async Task OnAppointmentUpdate(DxSchedulerAppointmentItem item)
-    {
-        if (item.Id is int id)
-        {
-            TaskToDo taskToDo = await TaskService.GetTaskToDoByIdAsync(id);
-
-            taskToDo.Name = item.Subject;
-            taskToDo.Description = item.Description;
-            taskToDo.StartAt = item.Start;
-            taskToDo.DueDate = item.End;
-            taskToDo.Priority = (TaskPriority)(int)item.LabelId;
-
-            var assignedTo = item.CustomFields["AssignedTo"];
-
-            await TaskService.UpdateTaskToDoAsync(taskToDo);
-        }
-    }
-
-    private static string ToString(DateTime dateTime)
-    {
-        return dateTime.ToString(CultureInfo.InvariantCulture);
-    }
-
-    void OnAppointmentFormShowing(SchedulerAppointmentFormEventArgs args)
-    {
-        args.FormInfo = new CustomAppointmentFormInfo(args.Appointment, DataStorage, SchedulerItem);
-    }
-
-    public class CustomAppointmentFormInfo : SchedulerAppointmentFormInfo
-    {
-        public CustomAppointmentFormInfo(DxSchedulerAppointmentItem AppointmentItem, DxSchedulerDataStorage DataStorage, DxScheduler scheduler)
-            : base(AppointmentItem, DataStorage, scheduler) { }
-
-
-        public override string Subject
-        {
-            get { return base.Subject; }
-            set { base.Subject = value; }
-        }
-
-        public User AssignedTo
-        {
-            get { return (User)CustomFields["AssignedTo"]; }
-            set { CustomFields["AssignedTo"] = value; }
-        }
-    }
-
-    public class Appointment
-    {
-        public Appointment() { }
-        public int Id { get; set; }
-        public int AppointmentType { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public string Caption { get; set; }
-        public string Description { get; set; }
-        public int? Label { get; set; }
-        public int Status { get; set; }
-        public bool AllDay { get; set; }
-        public string Recurrence { get; set; }
-        public int? ResourceId { get; set; }
-        public string Resources { get; set; }
-        public bool Accepted { get; set; }
-        public User AssignedTo { get; set; }
-    }
-
-    public DxSchedulerDataStorage DataStorage => _dataStorage;
 }

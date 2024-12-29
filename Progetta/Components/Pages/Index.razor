@@ -29,7 +29,7 @@
                         .OrderByDescending(p => p.UpdatedAt ?? DateTime.MinValue) 
                         .Take(5))
                         {
-                            <NavLink class="welcome-card">
+                            <NavLink class="welcome-card" href="@($"/projects?projectId={project.Id}")">
                                 <div class="welcome-card-text">
                                     <span>@project.Name</span>
                                     <br> 
@@ -62,17 +62,15 @@
         </Items>
     </DxGridLayout>
     
-    
-    
     <div class="task-container"> 
-        <h5 class="taskCard-title h5-title">Twoje Zadania</h5>
+        <h5 class="taskCard-title h5-title">Twoje zadania:</h5>
         <DxTreeView AllowSelectNodes="true"
                     CssClass="dxTreeView"
                     AnimationType="LayoutAnimationType.Slide">
             <Nodes>
                 <DxTreeViewNode Text="Dzisiaj">
                     <Nodes>
-                        <DxTreeViewNode Text="Dzisiaj">
+                        <DxTreeViewNode class="list-node" Text="Dzisiaj" >
                             <Template>
                                 <div class="grid-container">
                                     <DxGrid @ref="Grid"
@@ -247,6 +245,8 @@
         </DxTreeView>
     </div>   
 </div>
+
+
 
 @code {
     IGrid Grid { get; set; }

@@ -134,5 +134,13 @@ namespace Progetta.Services
                 .Distinct()
                 .ToListAsync();
         }
+
+        public async Task<List<TaskToDo>> GetTasksByProjectIdAsync(int projectId)
+        {
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return await context.TasksToDo
+                .Where(task => task.ProjectId == projectId)
+                .ToListAsync();
+        }
     }
 }

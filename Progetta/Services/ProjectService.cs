@@ -70,7 +70,7 @@ namespace Progetta.Services
             await context.SaveChangesAsync();
         }
 
-        // 7. Pobranie wszystkich kategorii
+        // 5. Pobranie wszystkich kategorii
         public async Task<List<Category>> GetCategoriesAsync()
         {
             using ProjectContext context = await _contextFactory.CreateDbContextAsync();
@@ -78,6 +78,14 @@ namespace Progetta.Services
                 .Include(x => x.Projects)
                 .OrderBy(u => u.Name)
                 .ToListAsync();
+        }
+
+        public async Task<Project> GetProjectByIdAsync(int projectId)
+        {
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return await context.Projects
+                .Where(project => project.Id == projectId)
+                .FirstOrDefaultAsync();
         }
     }
 }
