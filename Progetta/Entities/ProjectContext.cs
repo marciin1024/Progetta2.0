@@ -1,15 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Reflection.Emit;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace Progetta.Entities
 {
-    public class ProjectContext : DbContext
+    public class ProjectContext : IdentityDbContext
     {
         public ProjectContext(DbContextOptions<ProjectContext> options) : base(options)
         {
-
         }
+
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Tag> Tags { get; set; }
@@ -21,6 +21,7 @@ namespace Progetta.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<TaskTag>()
                .HasKey(tt => new { tt.TaskId, tt.TagId });
 
@@ -53,7 +54,7 @@ namespace Progetta.Entities
 
            modelBuilder.Entity<TaskToDo>()
                .HasOne(t => t.CreatedBy)
-               .WithMany(u => u.CreatedTasks) 
+               .WithMany(u => u.CreatedTasks)
                .HasForeignKey(t => t.CreatedById)
                .OnDelete(DeleteBehavior.Restrict);
 

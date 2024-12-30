@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Progetta.Entities;
+using Microsoft.VisualBasic;
 
 namespace Progetta.Services
 {
@@ -18,6 +19,13 @@ namespace Progetta.Services
         public async Task AddTaskAsync(TaskToDo task)
         {
             using ProjectContext context = _contextFactory.CreateDbContext();
+
+            DateOnly dateOnlyNow = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            TimeOnly timeOnlyStartAt = new TimeOnly(DateTime.Now.Hour + 1, 0, 0);
+            TimeOnly timeOnlyDayEnd = new TimeOnly(23, 59, 0);
+
+            task.StartAt = new DateTime(dateOnlyNow, timeOnlyStartAt);
+            task.DueDate = new DateTime(dateOnlyNow, timeOnlyDayEnd);
             task.CreatedAt = DateTime.UtcNow;
             context.TasksToDo.Add(task);
             await context.SaveChangesAsync();

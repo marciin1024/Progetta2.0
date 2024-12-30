@@ -139,12 +139,12 @@
 
     private async Task AddTask()
     {
-        var newTask = new TaskToDo
-            {
-                Name = "Nowe zadanie",
-                ProjectId = 1,
-                CreatedAt = DateTime.UtcNow
-            };
+        TaskToDo newTask = new TaskToDo
+        {
+            Name = "Nowe zadanie",
+            ProjectId = 1,
+            CreatedAt = DateTime.UtcNow
+        };
 
         await TaskService.AddTaskAsync(newTask);
         await LoadData();

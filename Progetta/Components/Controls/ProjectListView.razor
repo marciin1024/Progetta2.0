@@ -144,7 +144,7 @@
 
     async Task Grid_EditModelSaving(GridEditModelSavingEventArgs e)
     {
-        var editableTask = (TaskToDo)e.EditModel;
+        TaskToDo editableTask = (TaskToDo)e.EditModel;
         if (e.IsNew)
         {
             await TaskService.AddTaskAsync(editableTask);

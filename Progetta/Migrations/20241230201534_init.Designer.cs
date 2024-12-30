@@ -12,8 +12,8 @@ using Progetta.Entities;
 namespace Progetta.Migrations
 {
     [DbContext(typeof(ProjectContext))]
-    [Migration("20241215110748_RemoveEndAt")]
-    partial class RemoveEndAt
+    [Migration("20241230201534_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,204 @@ namespace Progetta.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
 
             modelBuilder.Entity("Progetta.Entities.Category", b =>
                 {
@@ -78,7 +276,7 @@ namespace Progetta.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4419),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7844),
                             Message = "Lubię to!",
                             TaskId = 1,
                             UserId = 1
@@ -86,7 +284,7 @@ namespace Progetta.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4423),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7847),
                             Message = "Super!",
                             TaskId = 2,
                             UserId = 1
@@ -94,7 +292,7 @@ namespace Progetta.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4424),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7848),
                             Message = "Wow!",
                             TaskId = 1,
                             UserId = 2
@@ -147,7 +345,7 @@ namespace Progetta.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4305),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7746),
                             Description = "To jest opis projektu",
                             Name = "Pierwszy projekt",
                             OwnerId = 1
@@ -155,7 +353,7 @@ namespace Progetta.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4309),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7749),
                             Description = "To jest opis projektu",
                             Name = "Drugi projekt",
                             OwnerId = 2
@@ -266,7 +464,7 @@ namespace Progetta.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4335),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7770),
                             Name = "Pierwsze zadanie",
                             Priority = 1,
                             ProjectId = 1,
@@ -276,8 +474,8 @@ namespace Progetta.Migrations
                         {
                             Id = 2,
                             AssignedToId = 2,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4337),
-                            DueDate = new DateTime(2024, 12, 15, 12, 7, 47, 513, DateTimeKind.Local).AddTicks(4343),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7772),
+                            DueDate = new DateTime(2024, 12, 30, 21, 15, 33, 731, DateTimeKind.Local).AddTicks(7777),
                             Name = "Drugie zadanie",
                             Priority = 2,
                             ProjectId = 2,
@@ -286,8 +484,8 @@ namespace Progetta.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4391),
-                            DueDate = new DateTime(2024, 12, 15, 12, 7, 47, 513, DateTimeKind.Local).AddTicks(4392),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7822),
+                            DueDate = new DateTime(2024, 12, 30, 21, 15, 33, 731, DateTimeKind.Local).AddTicks(7823),
                             Name = "Trzecie zadanie",
                             Priority = 0,
                             ProjectId = 2,
@@ -297,7 +495,7 @@ namespace Progetta.Migrations
                         {
                             Id = 4,
                             AssignedToId = 1,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4394),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7825),
                             Description = "To jest opis zadania",
                             Name = "Czwarte zadanie",
                             Priority = 2,
@@ -324,6 +522,9 @@ namespace Progetta.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("LabelId")
+                        .HasColumnType("int");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -346,6 +547,7 @@ namespace Progetta.Migrations
                             Id = 1,
                             Email = "marcin@gmail.com",
                             FirstName = "Marcin",
+                            LabelId = 0,
                             LastName = "Nowak",
                             Password = "1234",
                             Role = 0
@@ -355,6 +557,7 @@ namespace Progetta.Migrations
                             Id = 2,
                             Email = "sebastian@gmail.com",
                             FirstName = "Sebastian",
+                            LabelId = 0,
                             LastName = "Kowalski",
                             Password = "1234",
                             Role = 1
@@ -364,6 +567,7 @@ namespace Progetta.Migrations
                             Id = 3,
                             Email = "leszek@gmail.com",
                             FirstName = "Leszek",
+                            LabelId = 0,
                             LastName = "Malinowski",
                             Password = "1234",
                             Role = 1
@@ -400,9 +604,60 @@ namespace Progetta.Migrations
                         {
                             UsernameId = 1,
                             ProjectId = 2,
-                            CreatedAt = new DateTime(2024, 12, 15, 11, 7, 47, 513, DateTimeKind.Utc).AddTicks(4498),
+                            CreatedAt = new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7905),
                             Role = 1
                         });
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Progetta.Entities.Comment", b =>
