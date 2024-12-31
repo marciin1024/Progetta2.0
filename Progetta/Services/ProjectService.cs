@@ -30,6 +30,7 @@ namespace Progetta.Services
             using ProjectContext context = await _contextFactory.CreateDbContextAsync();
             return await context.Projects
                 .Include(x => x.Category)
+                .Include(x => x.Owner)
                 .OrderBy(t => t.CreatedAt)
                 .ToListAsync();
         }
@@ -84,6 +85,8 @@ namespace Progetta.Services
         {
             using ProjectContext context = _contextFactory.CreateDbContext();
             return await context.Projects
+                .Include(project => project.Owner)
+                .Include(project => project.Category)
                 .Where(project => project.Id == projectId)
                 .FirstOrDefaultAsync();
         }

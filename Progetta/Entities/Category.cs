@@ -8,5 +8,10 @@ namespace Progetta.Entities
         public string Name { get; set; }
 
         public ICollection<Project> Projects { get; set; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

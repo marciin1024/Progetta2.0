@@ -20,6 +20,23 @@
                     <p><strong>Termin zakończenia:</strong></p>
                     <p>@project.DueDate?.ToString("dd-MM-yyyy")</p>
                 </div>
+                <div class="detail-item">
+                    <p><strong>Rozmiar zespołu:</strong></p>
+                </div>
+                <div class="detail-item">
+                    <p><strong>Kategoria:</strong></p>
+                </div>
+                <div class="detail-item">
+                    <p><strong>Właściciel: </strong></p>
+                    @project.Owner
+                </div>
+                <div class="detail-item">
+                    <div class="grid-cell-align-center">
+                        <DxButton IconCssClass="grid-icon grid-icon-open"
+                                  RenderStyle="ButtonRenderStyle.None"
+                                  Click="@(() => ShowProjectForm())" />
+                    </div>
+                </div>
             </div>
         </div>
     }
@@ -53,10 +70,14 @@
     </div>
 </div>
 
+<ProjectForm Project="project" Visible="TaskToDoFormVisible" SetVisiblity="SetVisiblity" />
+
 @code {
     int ActiveTabIndex { get; set; } = 0;
     Project project;
     private int ProjectId { get; set; }
+    public bool TaskToDoFormVisible { get; set; } = false;
+    TaskToDo Task { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -68,6 +89,17 @@
             ProjectId = projectId;
         }
         project = await ProjectService.GetProjectByIdAsync(ProjectId);
+        StateHasChanged();
+    }
+
+    private void ShowProjectForm()
+    {
+        TaskToDoFormVisible = true;
+    }
+
+    public void SetVisiblity(bool visibility)
+    {
+        TaskToDoFormVisible = visibility;
         StateHasChanged();
     }
 }
