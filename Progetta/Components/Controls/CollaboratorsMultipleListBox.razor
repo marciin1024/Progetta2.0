@@ -1,5 +1,54 @@
-﻿<h3>CollaboratorsMultipleListBox</h3>
+﻿@inject UserService UserService
+<style>
+    .templateListbox {
+        border-width: 0;
+        width: 100%
+    }
+</style>
+
+<DxDropDownBox @bind-Value="Value"
+               QueryDisplayText="QueryText"
+               DropDownWidthMode="DropDownWidthMode.EditorWidth"
+               InputId="ddbMultipleSelectionListBox"
+               CssClass="cw-480"
+               >
+    <DropDownBodyTemplate>
+        <DxListBox Data="@ListBoxData" TData="User" TValue="User"
+                   Values="@(GetListBoxValues(context.DropDownBox))"
+                   ValuesChanged="@(values => ListBoxValuesChanged(values, context.DropDownBox))"
+                   TextFieldName="@nameof(User.FullName)"
+                   SelectionMode="ListBoxSelectionMode.Multiple"
+                   ShowSearchboxes="true"
+                   ShowCheckboxes="true"
+                   CssClass="templateListbox"
+                   >
+        </DxListBox>
+    </DropDownBodyTemplate>
+</DxDropDownBox>
+
 
 @code {
-
+    List<User> ListBoxData { get; set; }
+    object Value { get; set; }
+    string QueryText(DropDownBoxQueryDisplayTextContext arg) {
+        var names = (arg.Value as List<User>)?.Select(x => x.FullName);
+        return names != null ? string.Join(",", names) : string.Empty;
+    }
+    List<User> GetListBoxValues(IDropDownBox dropDownBox) {
+        return dropDownBox.Value as List<User>;
+    }
+    void ListBoxValuesChanged(IEnumerable<User> values, IDropDownBox dropDownBox)
+    {
+        dropDownBox.BeginUpdate();
+        dropDownBox.Value = values;
+        dropDownBox.EndUpdate();
+    }
+    int GetSelectedItemsCount() {
+        if (Value is List<User> value)
+            return value.Count();
+        return 0;
+    }
+    protected override async Task OnInitializedAsync() {
+        ListBoxData = await UserService.GetUsersAsync();
+    }
 }
