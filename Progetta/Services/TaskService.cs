@@ -42,7 +42,20 @@ namespace Progetta.Services
                 .OrderBy(t => t.Status)  
                 .ThenByDescending(t => t.Id)  
                 .ToListAsync();
-            }
+        }
+
+        public List<TaskToDo> GetAllTasksToDo()
+        {
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return context.TasksToDo
+                .Include(x => x.AssignedTo)
+                .Include(x => x.Project)
+                .Include(x => x.Comments)
+                .OrderBy(t => t.Status)
+                .ThenByDescending(t => t.Id)
+                .ToList();
+        }
+
         // 3. Pobranie zadania po ID
         public async Task<TaskToDo> GetTaskToDoByIdAsync(int id)
         {

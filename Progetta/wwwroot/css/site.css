@@ -99,7 +99,7 @@ html, body {
 .dxTreeView {
     flex-grow: 1; 
     overflow-y: auto; 
-    margin-bottom: 20px; 
+    margin-bottom: 20px;
 }
 
 .taskCard-title {
@@ -146,6 +146,13 @@ html, body {
         margin: 0.25rem 0;
     }
 
+.category {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    box-sizing: border-box;
+}
+
 /* grid icons */
 .grid-icon-add {
     -webkit-mask-image: url(../images/icons/add.svg);
@@ -181,4 +188,7 @@ html, body {
     overflow: auto;
 }
 
-
+.templateListbox {
+    border-width: 0;
+    width: 100%
+}

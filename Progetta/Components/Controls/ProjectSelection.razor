@@ -1,7 +1,7 @@
 ﻿@rendermode InteractiveServer
 @inject ProjectService ProjectService
 
-<div class="cw-240">
+<div class="cw-240 ps-3 pt-4">
     <h5 class="card-title h5-title">Projekty</h5>
     <DxTreeView AllowSelectNodes="true"
                 CssClass="dxTreeView"
@@ -16,7 +16,7 @@
                             @foreach (var project in category.Projects)
                             {
                                         <DxTreeViewNode Text="@project.Name" 
-                                        NavigateUrl="@($"/projects?projectId={project.Id}")" />
+                                            NavigateUrl="@($"/projects?projectId={project.Id}")" />
                             }
                         }
                         else

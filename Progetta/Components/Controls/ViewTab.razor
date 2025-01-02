@@ -7,28 +7,30 @@
 @inject NavigationManager Navigation
 
 <div class="project-panel">
-    @if (project != null)
+    @if (Project != null)
     {
         <div class="project-details">
-            <h3>@project.Name</h3>
+            <h3>@Project.Name</h3>
             <div class="details-container">
                 <div class="detail-item">
                     <p><strong>Data rozpoczęcia:</strong></p>
-                    <p>@project.StartAt?.ToString("dd-MM-yyyy")</p>
+                    <p>@Project.StartAt?.ToString("dd-MM-yyyy")</p>
                 </div>
                 <div class="detail-item">
                     <p><strong>Termin zakończenia:</strong></p>
-                    <p>@project.DueDate?.ToString("dd-MM-yyyy")</p>
+                    <p>@Project.DueDate?.ToString("dd-MM-yyyy")</p>
                 </div>
                 <div class="detail-item">
                     <p><strong>Rozmiar zespołu:</strong></p>
+                    @(Project.UserProjects?.Count ?? 0)
                 </div>
                 <div class="detail-item">
                     <p><strong>Kategoria:</strong></p>
+                    @(Project.Category?.Name ?? string.Empty)
                 </div>
                 <div class="detail-item">
                     <p><strong>Właściciel: </strong></p>
-                    @project.Owner
+                    @Project.Owner
                 </div>
                 <div class="detail-item">
                     <div class="grid-cell-align-center">
@@ -57,49 +59,54 @@
             @switch (ActiveTabIndex)
             {
                 case 0:
-                    <ProjectListView></ProjectListView>
+                    <ProjectListView ProjectId="ProjectId"></ProjectListView>
                     break;
                 case 1:
-                    <ProjectKanbanView></ProjectKanbanView>
+                    <ProjectKanbanView ProjectId="ProjectId"></ProjectKanbanView>
                     break;
                 case 2:
-                    <ProjectSchedulerView></ProjectSchedulerView>
+                    <ProjectSchedulerView ProjectId="ProjectId"></ProjectSchedulerView>
                     break;
             }
         </div>
     </div>
 </div>
 
-<ProjectForm Project="project" Visible="TaskToDoFormVisible" SetVisiblity="SetVisiblity" />
+<ProjectForm
+    Project="Project"
+    Visible="ProjectFormVisible" 
+    SetVisiblity="SetVisiblity" 
+    SavedAsync="OnSavedAsync"/>
 
 @code {
+
+    [SupplyParameterFromQuery(Name = "projectId")]
+    public int ProjectId { get; set; }
+
+    Project Project;
     int ActiveTabIndex { get; set; } = 0;
-    Project project;
-    private int ProjectId { get; set; }
-    public bool TaskToDoFormVisible { get; set; } = false;
-    TaskToDo Task { get; set; }
+    public bool ProjectFormVisible { get; set; } = false;
 
     protected override async Task OnParametersSetAsync()
     {
-        var uri = new Uri(Navigation.Uri);
-        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-
-        if (queryParams.TryGetValue("projectId", out var projectIdValue) && int.TryParse(projectIdValue, out var projectId))
-        {
-            ProjectId = projectId;
-        }
-        project = await ProjectService.GetProjectByIdAsync(ProjectId);
+        Project = await ProjectService.GetProjectByIdAsync(ProjectId);
         StateHasChanged();
     }
 
     private void ShowProjectForm()
     {
-        TaskToDoFormVisible = true;
+        ProjectFormVisible = true;
     }
 
     public void SetVisiblity(bool visibility)
     {
-        TaskToDoFormVisible = visibility;
+        ProjectFormVisible = visibility;
+        StateHasChanged();
+    }
+
+    async Task OnSavedAsync()
+    {
+        Project = await ProjectService.GetProjectByIdAsync(ProjectId);
         StateHasChanged();
     }
 }

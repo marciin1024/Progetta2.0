@@ -5,11 +5,6 @@ namespace Progetta.Entities
 {
     public class TaskToDo
     {
-        public TaskToDo() 
-        {
-        
-        }
-
         public int Id { get; set; }
         [MaxLength(200)]
         public string Name { get; set; }

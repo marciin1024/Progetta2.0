@@ -1,4 +1,5 @@
 ﻿@page "/scheduler"
+@attribute [Authorize]
 
 @rendermode InteractiveServer
 @inject TaskService TaskService
@@ -7,17 +8,19 @@
 
 <DxScheduler @rendermode="InteractiveAuto"
              @bind-StartDate="@StartDate"
-             DataStorage="@_dataStorage"
+             DataStorage="DataStorage"
              ValidateEditForm="true"
              @bind-ActiveViewType="@ActiveViewType"
              @bind-AppointmentFormMode="@AppointmentFormMode"
-             AppointmentUpdating="OnAppointmentUpdating"
-             AppointmentUpdated="OnAppointmentUpdate"
+             AppointmentUpdated="OnAppointmentUpdated"
+             AppointmentRemoved="OnAppointmentRemoved"
+             AppointmentInserted="OnAppointmentInserted"
              AppointmentFormShowing="OnAppointmentFormShowing"
              CssClass="demo-sc-size">
     <Views>
-        <DxSchedulerDayView VisibleTime="@VisibleTime"></DxSchedulerDayView>
-         <DxSchedulerWorkWeekView VisibleTime="@VisibleTime"></DxSchedulerWorkWeekView>
+        <DxSchedulerDayView VisibleTime="@VisibleTime">
+        </DxSchedulerDayView>
+        <DxSchedulerWorkWeekView VisibleTime="@VisibleTime"></DxSchedulerWorkWeekView>
         <DxSchedulerWeekView VisibleTime="@VisibleTime"></DxSchedulerWeekView>
         <DxSchedulerMonthView CellMinWidth="120"></DxSchedulerMonthView>
         <DxSchedulerTimelineView Duration="@(TimeSpan.FromDays(7))" CellMinWidth="100">
@@ -25,10 +28,10 @@
                 <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Week"></DxSchedulerTimeScale>
                 <DxSchedulerTimeScale Unit="@SchedulerTimeScaleUnit.Day"></DxSchedulerTimeScale>
             </Scales>
-        </DxSchedulerTimelineView> 
+        </DxSchedulerTimelineView>
     </Views>
     <AppointmentFormHeaderTemplate>
-        <div class="popup-text-header">@(((CustomAppointmentFormInfo)context).Subject)</div>
+        <div class="popup-text-header">@context.Subject)</div>
         <DxSchedulerSaveAppointmentChangesButton></DxSchedulerSaveAppointmentChangesButton>
         <DxSchedulerDeleteAppointmentButton Text="@null"></DxSchedulerDeleteAppointmentButton>
         <DxSchedulerDiscardAppointmentChangesButton></DxSchedulerDiscardAppointmentChangesButton>
@@ -42,9 +45,11 @@
         }
     </AppointmentFormHeaderTemplate>
     <AppointmentFormLayout Context="formInfo">
-        <DxSchedulerCustomFormLayoutItem ColSpanMd="10">
+        <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
             <Template>
-                <DxTextBox @bind-Text="@(((CustomAppointmentFormInfo)formInfo).Name)" />
+                <div class="w-100" style="padding-left: 1.75rem;">
+                    <DxTextBox @bind-Text="@(((CustomAppointmentFormInfo)formInfo).Name)" />
+                </div>
             </Template>
         </DxSchedulerCustomFormLayoutItem>
         <DxSchedulerAllDayFormLayoutItem></DxSchedulerAllDayFormLayoutItem>
@@ -52,7 +57,17 @@
         <DxSchedulerStartTimeFormLayoutItem></DxSchedulerStartTimeFormLayoutItem>
         <DxSchedulerEndDateFormLayoutItem></DxSchedulerEndDateFormLayoutItem>
         <DxSchedulerEndTimeFormLayoutItem></DxSchedulerEndTimeFormLayoutItem>
-        <DxSchedulerLabelFormLayoutItem></DxSchedulerLabelFormLayoutItem>
+        <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
+            <Template>
+                <div class="w-100" style="padding-left: 1.75rem;">
+                    <DxComboBox Data="_allUsers"
+                                ValueFieldName="Id"
+                                TextFieldName="FullName"
+                                @bind-Value="@(((CustomAppointmentFormInfo)formInfo).AssignedToId)">
+                    </DxComboBox>
+                </div>
+            </Template>
+        </DxSchedulerCustomFormLayoutItem>
         <DxSchedulerDescriptionFormLayoutItem></DxSchedulerDescriptionFormLayoutItem>
         <DxSchedulerCustomFormLayoutItem ColSpanMd="10">
             <Template>
@@ -61,7 +76,7 @@
         </DxSchedulerCustomFormLayoutItem>
     </AppointmentFormLayout>
     <AppointmentCompactFormHeaderTemplate>
-        <div class="popup-text-header">@(((CustomAppointmentFormInfo)context).Subject)</div>
+        <div class="popup-text-header">@context.Subject</div>
         <DxSchedulerSaveAppointmentChangesButton></DxSchedulerSaveAppointmentChangesButton>
         <DxSchedulerDeleteAppointmentButton Text="@null"></DxSchedulerDeleteAppointmentButton>
         <DxSchedulerDiscardAppointmentChangesButton></DxSchedulerDiscardAppointmentChangesButton>
@@ -73,7 +88,9 @@
     <AppointmentCompactFormLayout Context="formInfo">
         <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
             <Template>
-                <DxTextBox @bind-Text="@(((CustomAppointmentFormInfo)formInfo).Name)" />
+                <div class="w-100" style="padding-left: 1.75rem;">
+                    <DxTextBox @bind-Text="@(((CustomAppointmentFormInfo)formInfo).Name)" />
+                </div>
             </Template>
         </DxSchedulerCustomFormLayoutItem>
         <DxSchedulerAllDayFormLayoutItem></DxSchedulerAllDayFormLayoutItem>
@@ -81,13 +98,15 @@
         <DxSchedulerStartTimeFormLayoutItem></DxSchedulerStartTimeFormLayoutItem>
         <DxSchedulerEndDateFormLayoutItem></DxSchedulerEndDateFormLayoutItem>
         <DxSchedulerEndTimeFormLayoutItem></DxSchedulerEndTimeFormLayoutItem>
-        <DxSchedulerCustomFormLayoutItem ColSpanMd="10">
+        <DxSchedulerCustomFormLayoutItem ColSpanMd="12">
             <Template>
-                <DxComboBox Data="AllUsers"
-                            ValueFieldName="Id"
-                            TextFieldName="FullName"
-                            @bind-Value="@(((CustomAppointmentFormInfo)formInfo).AssignedToId)">
-                </DxComboBox>
+                <div class="w-100" style="padding-left: 1.75rem;">
+                    <DxComboBox Data="_allUsers"
+                                ValueFieldName="Id"
+                                TextFieldName="FullName"
+                                @bind-Value="@(((CustomAppointmentFormInfo)formInfo).AssignedToId)">
+                    </DxComboBox>
+                </div>
             </Template>
         </DxSchedulerCustomFormLayoutItem>
         <DxSchedulerDescriptionFormLayoutItem></DxSchedulerDescriptionFormLayoutItem>
@@ -100,122 +119,104 @@
 </DxScheduler>
 
 @code {
-    List<User> AllUsers = new List<User>();
+    List<User> _allUsers = new List<User>();
 
-    public DxScheduler SchedulerItem { get; set; }
+    DxSchedulerTimeSpanRange VisibleTime { get; set; } = new DxSchedulerTimeSpanRange(TimeSpan.FromHours(0), TimeSpan.FromHours(24));
+    DxSchedulerDataStorage DataStorage { get; set; }
+    DxScheduler SchedulerItem { get; set; }
     DateTime StartDate { get; set; } = DateTime.Today;
     SchedulerAppointmentFormMode AppointmentFormMode { get; set; } = SchedulerAppointmentFormMode.Both;
     SchedulerViewType ActiveViewType { get; set; } = SchedulerViewType.Day;
-    DxSchedulerTimeSpanRange VisibleTime = new DxSchedulerTimeSpanRange(TimeSpan.FromHours(8), TimeSpan.FromHours(19));
-    private DxSchedulerDataStorage _dataStorage;
 
-
-    public async Task OnAppointmentUpdating(SchedulerAppointmentOperationEventArgs args)
+    protected override async Task OnInitializedAsync()
     {
-        if(args.Appointment.SourceObject is Appointment appointment)
+        _allUsers = await UserService.GetUsersAsync();
+        DataStorage = await GetDxSchedulerDataStorage();
+    }
+
+    void OnAppointmentFormShowing(SchedulerAppointmentFormEventArgs args)
+    {
+        // public EventCallback<DxSchedulerAppointmentItem> AppointmentRemoved
+        args.FormInfo = new CustomAppointmentFormInfo(args.Appointment, DataStorage, SchedulerItem);
+    }
+
+    void OnAppointmentUpdated(DxSchedulerAppointmentItem appointmentItem)
+    {
+        if (appointmentItem.SourceObject is AppointmentModel appointment)
         {
             using ProjectContext context = ContextFactory.CreateDbContext();
-            TaskToDo taskToDo = await context.TasksToDo
+            TaskToDo taskToDo = context.TasksToDo
                 .Include(t => t.Project)
                 .Include(t => t.AssignedTo)
                 .Include(t => t.Comments)
                 .Include(t => t.TaskTags)
-                .FirstOrDefaultAsync(t => t.Id == appointment.Id);
+                .FirstOrDefault(t => t.Id == appointment.Id);
 
             taskToDo.Name = appointment.Name;
             taskToDo.Description = appointment.Description;
             taskToDo.StartAt = appointment.StartDate;
             taskToDo.DueDate = appointment.EndDate;
             taskToDo.AssignedToId = appointment.AssignedToId;
-            await context.SaveChangesAsync();
+            taskToDo.AssignedTo = context.Users.FirstOrDefault(x => x.Id == appointment.AssignedToId);
+            context.SaveChanges();
 
-            taskToDo = await context.TasksToDo
-                .Include(t => t.Project)
-                .Include(t => t.AssignedTo)
-                .Include(t => t.Comments)
-                .Include(t => t.TaskTags)
-                .FirstOrDefaultAsync(t => t.Id == appointment.Id);
-
-            appointment.AssignedTo = taskToDo.AssignedTo;
-            args.Appointment.Subject = appointment.AssignedTo?.FullName ?? string.Empty;
-            args.Appointment.LabelId = (int)(taskToDo.AssignedTo?.LabelId ?? 0);
+            appointmentItem.Subject = GetSubject(taskToDo);
+            DataStorage.AppointmentsSource = GetAppointments();
+            DataStorage.RefreshData();
         }
     }
 
-    public async Task OnAppointmentUpdate(DxSchedulerAppointmentItem item)
+    void OnAppointmentRemoved(DxSchedulerAppointmentItem appointmentItem)
     {
-        // if (item.SourceObject is Appointment appointment)
-        // {
-        //     using ProjectContext context = ContextFactory.CreateDbContext();
-        //     TaskToDo taskToDo = await context.TasksToDo
-        //         .Include(t => t.Project)
-        //         .Include(t => t.AssignedTo)
-        //         .Include(t => t.Comments)
-        //         .Include(t => t.TaskTags)
-        //         .FirstOrDefaultAsync(t => t.Id == appointment.Id);
-
-        //     taskToDo.Name = appointment.Name;
-        //     taskToDo.Description = appointment.Description;
-        //     taskToDo.StartAt = appointment.StartDate;
-        //     taskToDo.DueDate = appointment.EndDate;
-        //     taskToDo.AssignedToId = appointment.AssignedToId;
-        //     await context.SaveChangesAsync();
-
-        //     taskToDo = await context.TasksToDo
-        //         .Include(t => t.Project)
-        //         .Include(t => t.AssignedTo)
-        //         .Include(t => t.Comments)
-        //         .Include(t => t.TaskTags)
-        //         .FirstOrDefaultAsync(t => t.Id == appointment.Id);
-
-
-        //     appointment.Label = (int)(taskToDo.AssignedTo?.LabelId ?? 0);
-        //     appointment.AssignedTo = taskToDo.AssignedTo;
-
-        //     item.Subject = appointment.Caption;
-        //     item.LabelId = (int)(taskToDo.AssignedTo?.LabelId ?? 0);
-        // }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        AllUsers = await UserService.GetUsersAsync();
-
-        var tasksToDo = await TaskService.GetAllTasksToDoAsync();
-
-        List<Appointment> appointments = new List<Appointment>();
-        foreach (TaskToDo taskToDo in tasksToDo)
+        if (appointmentItem.SourceObject is AppointmentModel appointment)
         {
-            DateTime startAt = taskToDo.StartAt ?? DateTime.Now;
-            DateTime endDate = taskToDo.DueDate ?? DateTime.Now;
-
-            Appointment appointment = new Appointment
+            using ProjectContext context = ContextFactory.CreateDbContext();
+            TaskToDo taskToDo = context.TasksToDo.FirstOrDefault(x => x.Id == appointment.Id);
+            if (taskToDo is not null)
             {
-                Id = taskToDo.Id,
-                AppointmentType = 0,
-                Name = taskToDo.Name,
-                Label = (int)(taskToDo.AssignedTo?.LabelId ?? 0),
-                StartDate = startAt,
-                EndDate = endDate,
-                Description = taskToDo.Description,
-                ResourceId = 0,
-                AssignedTo = taskToDo.AssignedTo,
-                AssignedToId = taskToDo.AssignedTo?.Id ?? 0
-            };
+                context.Remove(taskToDo);
+                context.SaveChanges();
 
-            appointments.Add(appointment);
+                DataStorage.AppointmentsSource = GetAppointments();
+                DataStorage.RefreshData();
+            }
         }
+    }
 
-        _dataStorage = new DxSchedulerDataStorage()
+    void OnAppointmentInserted(DxSchedulerAppointmentItem appointmentItem)
+    {
+        if (appointmentItem.SourceObject is AppointmentModel appointment)
+        {
+            using ProjectContext context = ContextFactory.CreateDbContext();
+            TaskToDo taskToDo = new TaskToDo();
+            taskToDo.Name = appointment.Name;
+            taskToDo.StartAt = appointment.StartDate;
+            taskToDo.DueDate = appointment.EndDate;
+            taskToDo.Description = appointment.Description;
+            taskToDo.AssignedToId = appointment.AssignedToId;
+            taskToDo.AssignedTo = context.Users.FirstOrDefault(x => x.Id == appointment.AssignedToId);
+            taskToDo.ProjectId = context.Projects.FirstOrDefault().Id; // TODO: jak ma być wybierany projekt?
+            context.TasksToDo.Add(taskToDo);
+            context.SaveChanges();
+
+            appointmentItem.Subject = GetSubject(taskToDo);
+            DataStorage.AppointmentsSource = GetAppointments();
+            DataStorage.RefreshData();
+        }
+    }
+
+    private async Task<DxSchedulerDataStorage> GetDxSchedulerDataStorage()
+    {
+        return new DxSchedulerDataStorage()
             {
-                AppointmentsSource = appointments,
+                AppointmentsSource = GetAppointments(),
                 AppointmentMappings = new DxSchedulerAppointmentMappings()
                 {
                     Id = "Id",
                     Type = "AppointmentType",
                     Start = "StartDate",
                     End = "EndDate",
-                    Subject = "Caption",
+                    Subject = "Subject",
                     AllDay = "AllDay",
                     Description = "Description",
                     LabelId = "Label",
@@ -224,80 +225,46 @@
                         new DxSchedulerCustomFieldMapping { Name = "Name", Mapping = "Name" },
                         new DxSchedulerCustomFieldMapping { Name = "AssignedToId", Mapping = "AssignedToId" }
                     ]
-
                 }
             };
     }
 
-    private static string ToString(DateTime dateTime)
+    private string GetSubject(TaskToDo taskToDo)
     {
-        return dateTime.ToString(CultureInfo.InvariantCulture);
+        if (taskToDo.AssignedTo is null)
+        {
+            return taskToDo.Name;
+        }
+        return $"{taskToDo.Name} ({taskToDo.AssignedTo.FullName})";
     }
 
-    void OnAppointmentFormShowing(SchedulerAppointmentFormEventArgs args)
+    private List<AppointmentModel> GetAppointments()
     {
-        args.FormInfo = new CustomAppointmentFormInfo(args.Appointment, DataStorage, SchedulerItem);
-    }
-
-    public class CustomAppointmentFormInfo : SchedulerAppointmentFormInfo
-    {
-        public CustomAppointmentFormInfo(DxSchedulerAppointmentItem AppointmentItem, DxSchedulerDataStorage DataStorage, DxScheduler scheduler)
-            : base(AppointmentItem, DataStorage, scheduler) {}
-
-        public override string Subject
+        List<AppointmentModel> appointmentModels = new List<AppointmentModel>();
+        List<TaskToDo> tasksToDo = TaskService.GetAllTasksToDo();
+        foreach (TaskToDo taskToDo in tasksToDo)
         {
-            get => base.Subject;
-            set { base.Subject = value; }
-        }
+            DateTime startAt = taskToDo.StartAt ?? DateTime.Now;
+            DateTime endDate = taskToDo.DueDate ?? DateTime.Now;
 
-        public int AssignedToId
-        {
-            get => (int)CustomFields["AssignedToId"];
-            set { CustomFields["AssignedToId"] = value; }
-        }
-
-        public string Name
-        {
-            get => (string)CustomFields["Name"];
-            set { CustomFields["Name"] = value; }
-        }
-    }
-
-    public class Appointment
-    {
-        public int Id { get; set; }
-        public int AppointmentType { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public string Caption
-        {
-            get
-            {
-                if(AssignedTo is null)
+            AppointmentModel appointment = new AppointmentModel
                 {
-                    return Name;
-                }
-                return $"{Name} ({AssignedTo.FullName})";
-            }
-            set
-            {
-                Name = value;
-            }
+                    Id = taskToDo.Id,
+                    AppointmentType = 0,
+                    Subject = GetSubject(taskToDo),
+                    Name = taskToDo.Name,
+                    Label = (int)(taskToDo.AssignedTo?.LabelId ?? 0),
+                    StartDate = startAt,
+                    EndDate = endDate,
+                    Description = taskToDo.Description,
+                    ResourceId = 0,
+                    AssignedTo = taskToDo.AssignedTo,
+                    AssignedToId = taskToDo.AssignedTo?.Id ?? 0
+                };
+
+            appointmentModels.Add(appointment);
         }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public int? Label { get; set; }
-        public int Status { get; set; }
-        public bool AllDay { get; set; }
-        public string Recurrence { get; set; }
-        public int? ResourceId { get; set; }
-        public string Resources { get; set; }
-        public bool Accepted { get; set; }
-        public User AssignedTo { get; set; }
-        public int AssignedToId { get; set; }
+        return appointmentModels;
     }
 
-    public DxSchedulerDataStorage DataStorage => _dataStorage;
 }
-
-

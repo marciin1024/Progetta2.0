@@ -74,12 +74,14 @@
 </div>
 
 @code {
+    [Parameter]
+    public int ProjectId { get; set; }
+
     private List<TaskToDo>? taskList;
     private List<User>? availableUsers;
     private TaskToDo? draggedTask;
     private string? selectedPriority;
     private string? selectedUserId;
-    private int ProjectId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,13 +91,6 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        var uri = new Uri(Navigation.Uri);
-        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-
-        if (queryParams.TryGetValue("projectId", out var projectIdValue) && int.TryParse(projectIdValue, out var projectId))
-        {
-            ProjectId = projectId;
-        }
         await LoadData();
     }
 

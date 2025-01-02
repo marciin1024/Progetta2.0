@@ -3,29 +3,49 @@
 @inject ProjectService ProjectService
 
 <div class="page">
-    <Drawer DrawerHeader="drawerHeader">
-        <DrawerBody>
-            <div class="w-100">
-                <NavMenu></NavMenu>
-                <ProjectSelection></ProjectSelection>
-            </div>
-        </DrawerBody>
-        <DrawerTarget>
-            <div class="nav-buttons-container" style="height: 10%;">
-                <NavLink href="@UrlGenerator.GetUrl(new Uri(NavigationManager.Uri).LocalPath, !ToggledSidebar)">
-                    <DxButton RenderStyle="@ButtonRenderStyle.Secondary" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="menu-button" IconCssClass="icon icon-menu"></DxButton>
-                </NavLink>
-                @if (new Uri(NavigationManager.Uri).LocalPath != "/") {
-                    <NavLink href="@UrlGenerator.GetUrl("/", ToggledSidebar)" class="button-link hidden">
+    <AuthorizeView>
+        <Authorized>
+
+            <Drawer DrawerHeader="drawerHeader">
+                <DrawerBody>
+                    <div class="w-100">
+                        <NavMenu></NavMenu>
+                        <ProjectSelection></ProjectSelection>
+                    </div>
+                </DrawerBody>
+                <DrawerTarget>
+                    <div class="nav-buttons-container" style="height: 10%;">
+                        <NavLink href="@UrlGenerator.GetUrl(new Uri(NavigationManager.Uri).LocalPath, !ToggledSidebar)">
+                            <DxButton RenderStyle="@ButtonRenderStyle.Secondary" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="menu-button" IconCssClass="icon icon-menu"></DxButton>
+                        </NavLink>
+                        @if (new Uri(NavigationManager.Uri).LocalPath != "/")
+                        {
+                            <NavLink href="@UrlGenerator.GetUrl("/", ToggledSidebar)" class="button-link hidden">
                                 <DxButton RenderStyle="@ButtonRenderStyle.Dark" Text="Back to Home" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="menu-button-nav" IconCssClass="icon icon-back"></DxButton>
-                    </NavLink>
-                }
-            </div>
-            <div class="px-4" style="height: 90%;">
-                @Body
-            </div>
-        </DrawerTarget>
-    </Drawer>
+                            </NavLink>
+                        }
+                    </div>
+                    <div class="px-4" style="height: 90%;">
+                        @Body
+                    </div>
+                </DrawerTarget>
+            </Drawer>
+        </Authorized>
+        <NotAuthorized>
+            <Drawer DrawerHeader="drawerHeader">
+                <DrawerBody>
+                    <div class="w-100">
+                        <NavMenu></NavMenu>
+                    </div>
+                </DrawerBody>
+                <DrawerTarget>
+                    <div class="px-4" style="height: 90%;">
+                        @Body
+                    </div>
+                </DrawerTarget>
+            </Drawer>
+        </NotAuthorized>
+    </AuthorizeView>
 </div>
 
 @code {

@@ -93,6 +93,10 @@
 
 
 @code {
+    [Parameter]
+    public int ProjectId { get; set; }
+
+
     IGrid Grid { get; set; }
     IEnumerable<TaskToDo> DataSource { get; set; }
     List<User> Users { get; set; }
@@ -100,7 +104,6 @@
     public bool TaskToDoFormVisible { get; set; } = false;
     public TaskToDo Task { get; set; }
     List<Project> Projects { get; set; } = [];
-    private int ProjectId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,14 +114,6 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        var uri = new Uri(Navigation.Uri);
-        var queryParams = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-
-        if (queryParams.TryGetValue("projectId", out var projectIdValue) && int.TryParse(projectIdValue, out var projectId))
-        {
-            ProjectId = projectId;
-        }
-
         await UpdateDataAsync();
         StateHasChanged();
     }

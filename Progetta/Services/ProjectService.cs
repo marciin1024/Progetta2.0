@@ -29,17 +29,25 @@ namespace Progetta.Services
         {
             using ProjectContext context = await _contextFactory.CreateDbContextAsync();
             return await context.Projects
-                .Include(x => x.Category)
-                .Include(x => x.Owner)
+                .Include(project => project.Category)
+                .Include(project => project.Owner)
+                .Include(project => project.Owner)
+                .Include(project => project.Category)
+                .Include(project => project.UserProjects)
+                .ThenInclude(up => up.Username)
+                .Include(project => project.Tasks)
                 .OrderBy(t => t.CreatedAt)
                 .ToListAsync();
         }
 
         // 3. Aktualizacja projektu
-        public async Task UpdateProjectAsync(Project project)
+        public async Task UpdateProjectAsync(Project project, IEnumerable<User> users)
         {
             using ProjectContext context = await _contextFactory.CreateDbContextAsync();
-            var existingProject = await context.Projects.FindAsync(project.Id);
+            var existingProject = await context.Projects
+                .Include(x => x.UserProjects)
+                .FirstOrDefaultAsync(x => x.Id == project.Id);
+
             if (existingProject == null)
             {
                 throw new Exception("Project not found.");
@@ -53,6 +61,22 @@ namespace Progetta.Services
             existingProject.OwnerId = project.OwnerId;
             existingProject.CategoryId = project.CategoryId;
             existingProject.StartAt = project.StartAt;
+
+            if(existingProject.UserProjects is not null
+                && existingProject.UserProjects.Any())
+            {
+                context.RemoveRange(existingProject.UserProjects);
+            }
+
+            foreach (User user in users)
+            {
+                UserProject userProject = new UserProject
+                {
+                    ProjectId = project.Id,
+                    UsernameId = user.Id
+                };
+                context.Add(userProject);
+            }
 
             context.Projects.Update(existingProject);
             await context.SaveChangesAsync();
@@ -85,10 +109,27 @@ namespace Progetta.Services
         {
             using ProjectContext context = _contextFactory.CreateDbContext();
             return await context.Projects
+                .Include(project => project.Category)
+                .Include(project => project.Owner)
                 .Include(project => project.Owner)
                 .Include(project => project.Category)
-                .Where(project => project.Id == projectId)
-                .FirstOrDefaultAsync();
+                .Include(project => project.UserProjects)
+                .ThenInclude(up => up.Username)
+                .FirstOrDefaultAsync(project => project.Id == projectId);
+        }
+
+        public Project GetProjectById(int projectId)
+        {
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return context.Projects
+                .Include(project => project.Category)
+                .Include(project => project.Owner)
+                .Include(project => project.Owner)
+                .Include(project => project.Category)
+                .Include(project => project.Tasks)
+                .Include(project => project.UserProjects)
+                .ThenInclude(up => up.Username)
+                .FirstOrDefault(project => project.Id == projectId);
         }
     }
 }

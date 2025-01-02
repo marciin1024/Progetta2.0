@@ -215,6 +215,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         ChartsData = await DataProvider.GetAllProjectsAsync();
         UserChartsData = await UserService.GetUsersAsync();
         CategoriesData = await DataProvider.GetCategoriesAsync();

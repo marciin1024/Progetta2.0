@@ -1,4 +1,4 @@
-﻿@page "/Account/Login"
+﻿@page "/Login"
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
@@ -35,20 +35,6 @@
                 </DxFormLayoutItem>
             </DxFormLayout>
         </EditForm>
-        <div class="or">
-            <div class="or-line"></div>
-            <div class="or-text">or</div>
-            <div class="or-line"></div>
-        </div>
-        <ExternalLoginPicker />
-        <div class="links-container">
-            <span>Do not have a Account?</span><a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Create an account</a>
-        </div>
-        <div class="links-container">
-            <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-            <div class="dot"></div>
-            <a href="Account/ForgotPassword">Forgot your password?</a>
-        </div>
     </div>
 </div>
 

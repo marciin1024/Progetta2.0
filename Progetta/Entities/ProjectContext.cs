@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Progetta.Entities
 {
-    public class ProjectContext : IdentityDbContext
+    public class ProjectContext : IdentityDbContext<IdentityUser<int>, IdentityRole<int>, int>
     {
         public ProjectContext(DbContextOptions<ProjectContext> options) : base(options)
         {

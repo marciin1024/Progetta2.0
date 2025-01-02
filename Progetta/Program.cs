@@ -26,7 +26,10 @@ builder.Services.AddAuthentication(options => {
     options.DefaultScheme = IdentityConstants.ApplicationScheme;
     options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
 })
-    .AddIdentityCookies();
+.AddIdentityCookies(x =>
+{
+    x.ApplicationCookie.Configure(x => x.LoginPath = "/Login");
+});
 
 builder.Services.AddScoped<TaskService>();
 builder.Services.AddScoped<ProjectService>();
@@ -54,6 +57,9 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

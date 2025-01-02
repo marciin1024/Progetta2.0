@@ -44,7 +44,8 @@
                                         @(project.DueDate.HasValue
                                             ? project.DueDate.Value.ToString("dd-MM-yyyy") : "Brak daty")
                                     </span>
-                                    <span>Współpracownicy:</span>
+                                    <br>
+                                    <span>Uczestnicy: @(project.UserProjects?.Count ?? 0)</span>
                                     </div> 
                                 </div> 
                                 <div class="welcome-card-back"></div>
@@ -70,7 +71,7 @@
             <Nodes>
                 <DxTreeViewNode Text="Dzisiaj">
                     <Nodes>
-                        <DxTreeViewNode class="list-node" Text="Dzisiaj" >
+                        <DxTreeViewNode class="list-node">
                             <Template>
                                 <div class="grid-container">
                                     <DxGrid @ref="Grid"
@@ -114,7 +115,7 @@
                 </DxTreeViewNode>                
                 <DxTreeViewNode Text="W tym tygodniu">
                     <Nodes>
-                        <DxTreeViewNode Text="Dzisiaj">
+                        <DxTreeViewNode>
                             <Template>
                                 <div class="grid-container">
                                     <DxGrid @ref="Grid"
@@ -157,7 +158,7 @@
                 </DxTreeViewNode>
                 <DxTreeViewNode Text="W następnym tygodniu">
                     <Nodes>
-                        <DxTreeViewNode Text="Dzisiaj">
+                        <DxTreeViewNode>
                             <Template>
                                 <div class="grid-container">
                                     <DxGrid @ref="Grid"
@@ -200,7 +201,7 @@
                 </DxTreeViewNode>
                 <DxTreeViewNode Text="Zaległe">
                     <Nodes>
-                        <DxTreeViewNode Text="Dzisiaj">
+                        <DxTreeViewNode Text="Dzisiaj" CssClass="">
                             <Template>
                                 <div class="grid-container">
                                     <DxGrid @ref="Grid"

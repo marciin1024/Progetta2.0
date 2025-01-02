@@ -1,14 +1,26 @@
-﻿﻿<div id="sidebar">         
-    <DxMenu Orientation="@Orientation.Vertical" CssClass="menu">
-        <Items>
-            <DxMenuItem NavigateUrl="/" Text="Home" CssClass="menu-item" IconCssClass="icon home-icon"></DxMenuItem>
-            <DxMenuItem NavigateUrl="/kanban" Text="Kanban" CssClass="menu-item" IconCssClass="icon counter-icon"></DxMenuItem>
-            <DxMenuItem NavigateUrl="/list" Text="List" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>                                    
-            <DxMenuItem NavigateUrl="/scheduler" Text="Scheduler" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>                                    
-            <DxMenuItem NavigateUrl="/dashboard" Text="Dashboard" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>                                    
-            <DxMenuItem NavigateUrl="/project" Text="Projects" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>                                    
-        </Items>
-    </DxMenu>
+﻿﻿<div id="sidebar">
+
+    <AuthorizeView>
+        <Authorized>
+            <DxMenu Orientation="@Orientation.Vertical" CssClass="menu">
+                <Items>
+                    <DxMenuItem NavigateUrl="/" Text="Home" CssClass="menu-item" IconCssClass="icon home-icon"></DxMenuItem>
+                    <DxMenuItem NavigateUrl="/kanban" Text="Kanban" CssClass="menu-item" IconCssClass="icon counter-icon"></DxMenuItem>
+                    <DxMenuItem NavigateUrl="/list" Text="List" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>
+                    <DxMenuItem NavigateUrl="/scheduler" Text="Scheduler" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>
+                    <DxMenuItem NavigateUrl="/dashboard" Text="Dashboard" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>
+                </Items>
+            </DxMenu>
+        </Authorized>
+        <NotAuthorized>
+            <DxMenu Orientation="@Orientation.Vertical" CssClass="menu">
+                <Items>
+                    <DxMenuItem NavigateUrl="/login" Text="Login" CssClass="menu-item" IconCssClass="icon home-icon"></DxMenuItem>
+                    <DxMenuItem NavigateUrl="/register" Text="Register" CssClass="menu-item" IconCssClass="icon weather-icon"></DxMenuItem>
+                </Items>
+            </DxMenu>
+        </NotAuthorized>
+    </AuthorizeView>
 </div>
 
 

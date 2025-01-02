@@ -1,4 +1,4 @@
-﻿@page "/Account/Register"
+﻿@page "/Register"
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -10,7 +10,7 @@
 @inject UserManager<IdentityUser> UserManager
 @inject IUserStore<IdentityUser> UserStore
 @inject SignInManager<IdentityUser> SignInManager
-@inject IEmailSender<IdentityUser> EmailSender
+@* @inject IEmailSender<IdentityUser> EmailSender *@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
@@ -42,15 +42,6 @@
                 </DxFormLayoutItem>
             </DxFormLayout>
         </EditForm>
-        <div class="or">
-            <div class="or-line"></div>
-            <div class="or-text">or</div>
-            <div class="or-line"></div>
-        </div>
-        <ExternalLoginPicker />
-        <div class="links-container">
-            <span>Already have an account?</span><a href="@(NavigationManager.GetUriWithQueryParameters("Account/Login", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Login</a>
-        </div>
     </div>
 </div>
 
@@ -87,7 +78,7 @@
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
 
-        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+        // await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
         if(UserManager.Options.SignIn.RequireConfirmedAccount) {
             RedirectManager.RedirectTo(
