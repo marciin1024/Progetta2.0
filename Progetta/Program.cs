@@ -40,9 +40,20 @@ builder.Services.AddDbContextFactory<ProjectContext>(
 );
 
 builder.Services
-    .AddIdentityCore<IdentityUser>()
+    .AddIdentityCore<User>(options =>
+    {
+        options.Password.RequireDigit = false;
+        options.Password.RequiredLength = 0;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequiredUniqueChars = 0;
+    })
+    .AddRoles<IdentityRole<int>>()
     .AddEntityFrameworkStores<ProjectContext>()
-    .AddSignInManager()
+    .AddUserManager<UserManager<User>>()
+    .AddSignInManager<SignInManager<User>>()
+    .AddRoleManager<RoleManager<IdentityRole<int>>>()
     .AddDefaultTokenProviders();
 
 var app = builder.Build();
@@ -68,18 +79,62 @@ app.MapAdditionalIdentityEndpoints();
 
 using (IServiceScope scope = app.Services.CreateScope())
 {
-    UserManager<IdentityUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-    IdentityUser user = await userManager.FindByNameAsync("Admin");
-    if(user is null)
+    UserManager<User> userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    RoleManager<IdentityRole<int>> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+
+    IdentityRole<int> administratorRole = await roleManager.FindByNameAsync("Administrator");
+    if(administratorRole is null)
     {
-        user = new IdentityUser
+        administratorRole = new IdentityRole<int>
         {
-            Email = "admin@progetta.com",
-            UserName = "Admin"
+            Name = "Administrator"
         };
 
-        user.PasswordHash = userManager.PasswordHasher.HashPassword(user, "admin");
-        await userManager.CreateAsync(user);
+        await roleManager.CreateAsync(administratorRole);
+    }
+
+    IdentityRole<int> standardUserRole = await roleManager.FindByNameAsync("StandardUser");
+    if (standardUserRole is null)
+    {
+        standardUserRole = new IdentityRole<int>
+        {
+            Name = "StandardUser"
+        };
+
+        await roleManager.CreateAsync(standardUserRole);
+    }
+
+    User administrator = await userManager.FindByNameAsync("Admin");
+    if(administrator is null)
+    {
+        administrator = new User
+        {
+            Email = "admin@progetta.com",
+            UserName = "Admin",
+            FirstName = "Admin",
+            LastName = "Admin"
+        };
+
+        administrator.PasswordHash = userManager.PasswordHasher.HashPassword(administrator, "admin");
+        await userManager.CreateAsync(administrator);
+        await userManager.AddToRoleAsync(administrator, "Administrator");
+    }
+
+    User standardUser = await userManager.FindByNameAsync("StandardUser");
+    if(standardUser is null)
+    {
+        standardUser = new User
+        {
+            Email = "user@progetta.com",
+            UserName = "User",
+            FirstName = "Joe",
+            LastName = "Doe"
+
+        };
+
+        standardUser.PasswordHash = userManager.PasswordHasher.HashPassword(standardUser, "user");
+        await userManager.CreateAsync(standardUser);
+        await userManager.AddToRoleAsync(standardUser, "StandardUser");
     }
 }
 

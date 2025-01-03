@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace Progetta.Migrations
 {
     /// <inheritdoc />
@@ -17,7 +15,8 @@ namespace Progetta.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -31,7 +30,11 @@ namespace Progetta.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    LabelId = table.Column<int>(type: "int", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -79,30 +82,12 @@ namespace Progetta.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<int>(type: "int", nullable: false),
-                    LabelId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -123,7 +108,7 @@ namespace Progetta.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -145,7 +130,7 @@ namespace Progetta.Migrations
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -162,8 +147,8 @@ namespace Progetta.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -186,7 +171,7 @@ namespace Progetta.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -221,16 +206,16 @@ namespace Progetta.Migrations
                 {
                     table.PrimaryKey("PK_Projects", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Projects_AspNetUsers_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_Projects_Category_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Category",
                         principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Projects_Users_OwnerId",
-                        column: x => x.OwnerId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -255,22 +240,22 @@ namespace Progetta.Migrations
                 {
                     table.PrimaryKey("PK_TasksToDo", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_TasksToDo_AspNetUsers_AssignedToId",
+                        column: x => x.AssignedToId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_TasksToDo_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_TasksToDo_Projects_ProjectId",
                         column: x => x.ProjectId,
                         principalTable: "Projects",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TasksToDo_Users_AssignedToId",
-                        column: x => x.AssignedToId,
-                        principalTable: "Users",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_TasksToDo_Users_CreatedById",
-                        column: x => x.CreatedById,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -287,22 +272,22 @@ namespace Progetta.Migrations
                 {
                     table.PrimaryKey("PK_UserProjects", x => new { x.UsernameId, x.ProjectId });
                     table.ForeignKey(
+                        name: "FK_UserProjects_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_UserProjects_AspNetUsers_UsernameId",
+                        column: x => x.UsernameId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_UserProjects_Projects_ProjectId",
                         column: x => x.ProjectId,
                         principalTable: "Projects",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserProjects_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_UserProjects_Users_UsernameId",
-                        column: x => x.UsernameId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -321,17 +306,17 @@ namespace Progetta.Migrations
                 {
                     table.PrimaryKey("PK_Comments", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Comments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Comments_TasksToDo_TaskId",
                         column: x => x.TaskId,
                         principalTable: "TasksToDo",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Comments_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -357,61 +342,6 @@ namespace Progetta.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
-
-            migrationBuilder.InsertData(
-                table: "Tags",
-                columns: new[] { "Id", "Name" },
-                values: new object[] { 1, "Web" });
-
-            migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "Id", "Email", "FirstName", "LabelId", "LastName", "Password", "Role" },
-                values: new object[,]
-                {
-                    { 1, "marcin@gmail.com", "Marcin", 0, "Nowak", "1234", 0 },
-                    { 2, "sebastian@gmail.com", "Sebastian", 0, "Kowalski", "1234", 1 },
-                    { 3, "leszek@gmail.com", "Leszek", 0, "Malinowski", "1234", 1 }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Projects",
-                columns: new[] { "Id", "CategoryId", "CreatedAt", "Description", "DueDate", "Name", "OwnerId", "StartAt", "UpdatedAt" },
-                values: new object[,]
-                {
-                    { 1, null, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7746), "To jest opis projektu", null, "Pierwszy projekt", 1, null, null },
-                    { 2, null, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7749), "To jest opis projektu", null, "Drugi projekt", 2, null, null }
-                });
-
-            migrationBuilder.InsertData(
-                table: "TasksToDo",
-                columns: new[] { "Id", "AssignedToId", "CreatedAt", "CreatedById", "Description", "DueDate", "Name", "Priority", "ProjectId", "StartAt", "Status", "UpdatedAt" },
-                values: new object[,]
-                {
-                    { 1, null, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7770), null, null, null, "Pierwsze zadanie", 1, 1, null, 0, null },
-                    { 2, 2, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7772), null, null, new DateTime(2024, 12, 30, 21, 15, 33, 731, DateTimeKind.Local).AddTicks(7777), "Drugie zadanie", 2, 2, null, 0, null },
-                    { 3, null, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7822), null, null, new DateTime(2024, 12, 30, 21, 15, 33, 731, DateTimeKind.Local).AddTicks(7823), "Trzecie zadanie", 0, 2, null, 2, null },
-                    { 4, 1, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7825), null, "To jest opis zadania", null, "Czwarte zadanie", 2, 1, null, 0, null }
-                });
-
-            migrationBuilder.InsertData(
-                table: "UserProjects",
-                columns: new[] { "ProjectId", "UsernameId", "CreatedAt", "Role", "UserId" },
-                values: new object[] { 2, 1, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7905), 1, null });
-
-            migrationBuilder.InsertData(
-                table: "Comments",
-                columns: new[] { "Id", "CreatedAt", "Message", "TaskId", "UpdatedAt", "UserId" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7844), "Lubię to!", 1, null, 1 },
-                    { 2, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7847), "Super!", 2, null, 1 },
-                    { 3, new DateTime(2024, 12, 30, 20, 15, 33, 731, DateTimeKind.Utc).AddTicks(7848), "Wow!", 1, null, 2 }
-                });
-
-            migrationBuilder.InsertData(
-                table: "TaskTags",
-                columns: new[] { "TagId", "TaskId" },
-                values: new object[] { 1, 1 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -534,9 +464,6 @@ namespace Progetta.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
                 name: "Tags");
 
             migrationBuilder.DropTable(
@@ -546,10 +473,10 @@ namespace Progetta.Migrations
                 name: "Projects");
 
             migrationBuilder.DropTable(
-                name: "Category");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Category");
         }
     }
 }

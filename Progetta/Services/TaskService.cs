@@ -37,6 +37,7 @@ namespace Progetta.Services
             using ProjectContext context = _contextFactory.CreateDbContext();
             return await context.TasksToDo
                 .Include(x => x.AssignedTo)
+                .Include(x => x.TaskTags)
                 .Include(x => x.Project)
                 .Include(x => x.Comments)
                 .OrderBy(t => t.Status)  
@@ -49,6 +50,7 @@ namespace Progetta.Services
             using ProjectContext context = _contextFactory.CreateDbContext();
             return context.TasksToDo
                 .Include(x => x.AssignedTo)
+                .Include(x => x.TaskTags)
                 .Include(x => x.Project)
                 .Include(x => x.Comments)
                 .OrderBy(t => t.Status)
@@ -63,6 +65,7 @@ namespace Progetta.Services
             return await context.TasksToDo
                 .Include(t => t.Project)
                 .Include(t => t.AssignedTo)
+                .Include(x => x.TaskTags)
                 .Include(t => t.Comments)
                 .Include(t => t.TaskTags)
                 .FirstOrDefaultAsync(t => t.Id == id);
@@ -163,5 +166,22 @@ namespace Progetta.Services
                 .Where(task => task.ProjectId == projectId)
                 .ToListAsync();
         }
+
+        public async Task<List<Tag>> GetTagsAsync()
+        {
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return await context.Tags
+                .Include(u => u.TaskTags)
+                .OrderBy(u => u.Name)
+                .ToListAsync();
+        }
+
+        public async Task AddTagAsync(Tag tag)
+        {
+            using ProjectContext context = await _contextFactory.CreateDbContextAsync();
+            context.Tags.Add(tag);
+            await context.SaveChangesAsync();
+        }
+
     }
 }

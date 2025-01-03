@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+using Progetta.Entities;
 
 namespace Progetta.Components.Account {
-    internal sealed class IdentityUserAccessor(UserManager<IdentityUser> userManager, IdentityRedirectManager redirectManager) {
-        public async Task<IdentityUser> GetRequiredUserAsync(HttpContext context) {
+    internal sealed class IdentityUserAccessor(UserManager<User> userManager, IdentityRedirectManager redirectManager) {
+        public async Task<User> GetRequiredUserAsync(HttpContext context) {
             var user = await userManager.GetUserAsync(context.User);
 
             if(user is null) {

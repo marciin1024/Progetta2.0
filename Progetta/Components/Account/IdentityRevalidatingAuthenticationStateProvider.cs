@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using Progetta.Entities;
 
 namespace Progetta.Components.Account
 {
@@ -20,13 +21,13 @@ namespace Progetta.Components.Account
             AuthenticationState authenticationState, CancellationToken cancellationToken)
         {
             await using var scope = scopeFactory.CreateAsyncScope();
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
             return await ValidateSecurityStampAsync(userManager, authenticationState.User);
         }
 
-        private async Task<bool> ValidateSecurityStampAsync(UserManager<IdentityUser> userManager, ClaimsPrincipal principal)
+        private async Task<bool> ValidateSecurityStampAsync(UserManager<User> userManager, ClaimsPrincipal principal)
         {
-            IdentityUser user = await userManager.GetUserAsync(principal);
+            User user = await userManager.GetUserAsync(principal);
             if (user is null)
             {
                 return false;

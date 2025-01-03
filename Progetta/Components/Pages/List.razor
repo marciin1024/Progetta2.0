@@ -1,4 +1,5 @@
 ﻿@page "/list"
+@attribute [Authorize(Roles = "Administrator,StandardUser")]
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 @inject TaskService TaskService
@@ -7,7 +8,8 @@
 
 <h3>Lista</h3>
 <br />
-
+<TagBox></TagBox>
+<br>
 <DxGrid @ref="Grid"
         PageSize="20"
         Data="DataSource"

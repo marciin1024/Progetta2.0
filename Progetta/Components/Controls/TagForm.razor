@@ -1,17 +1,17 @@
-﻿@inject ProjectService ProjectService
+﻿@inject TaskService TaskService
 
 <DxPopup
     @bind-Visible="@Visible"
     ShowFooter="true"
-    HeaderText="Dodaj nową kategorię"
+    HeaderText="Dodaj nowy tag:"
     CloseButtonClick="OnCloseButtonClick">
     <BodyContentTemplate Context="PopupContext">
     <BodyTemplate>
         <div style="padding-top: 1rem; padding-bottom: 1rem">
             <DxFormLayout>
-                    <DxFormLayoutItem Caption="Nazwa kategorii:" ColSpanMd="12">
+                    <DxFormLayoutItem Caption="Nazwa tagu:" ColSpanMd="12">
                         <Template>
-                            <DxTextBox @bind-Text="@CategoryName" />
+                            <DxTextBox @bind-Text="@TagName" />
                         </Template>
                     </DxFormLayoutItem>
             </DxFormLayout>
@@ -29,39 +29,39 @@
     public bool Visible { get; set; } = false;
 
     [Parameter]
-    public Category Category { get; set; } = new Category();
+    public Tag Tag { get; set; } = new Tag();
 
-    private Category _category;
-    private string _categoryName;
+    private Tag _tag;
+    private string _tagName;
 
     [Parameter]
-    public Action<bool> SetCategoryVisiblity { get; set; }
+    public Action<bool> SetTagVisiblity { get; set; }
 
-    private string CategoryName
+    private string TagName
     {
-        get => _categoryName;
+        get => _tagName;
         set
         {
-            _categoryName = value;
-            _category.Name = value;
+            _tagName = value;
+            _tag.Name = value;
         }
     }
 
     protected override void OnInitialized()
     {
-        _category = Category ?? new Category();
-        _categoryName = _category.Name ?? string.Empty;
+        _tag = Tag ?? new Tag();
+        _tagName = _tag.Name ?? string.Empty;
     }
     
     private async Task OnOkButtonClick()
     {
 
-        await ProjectService.AddCategoryAsync(_category);
-        SetCategoryVisiblity?.Invoke(false);
+        await TaskService.AddTagAsync(_tag);
+        SetTagVisiblity?.Invoke(false);
     }
 
     void OnCloseButtonClick()
     {
-        SetCategoryVisiblity?.Invoke(false);
+        SetTagVisiblity?.Invoke(false);
     }
 }

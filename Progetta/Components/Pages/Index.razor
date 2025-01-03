@@ -1,10 +1,11 @@
 ﻿@page "/"
+
 @rendermode InteractiveServer
 @inject NavigationManager navigationManager
 @inject ProjectService ProjectService
 @inject TaskService TaskService
-
-
+@inject IHttpContextAccessor HttpContextAccessor
+@attribute [Authorize]
 
 <PageTitle>Progetta</PageTitle>
 
@@ -17,7 +18,7 @@
         <Items>
             <DxGridLayoutItem Area="header" CssClass="title">
                 <Template>
-                    <div class="title-header-text">Witaj user!</div>
+                    <div class="title-header-text">Witaj @HttpContextAccessor.HttpContext.User.Identity.Name</div>
                     <div class="title-header-text" style="text-align: left;">Twoje projekty:</div>
                 </Template>
             </DxGridLayoutItem>

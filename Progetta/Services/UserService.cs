@@ -20,5 +20,7 @@ namespace Progetta.Services
                 .OrderBy(u => u.FirstName)
                 .ToListAsync();
         }
+
+        
     }
 }

@@ -7,43 +7,75 @@
 @using Microsoft.AspNetCore.WebUtilities
 
 
-@inject UserManager<IdentityUser> UserManager
-@inject IUserStore<IdentityUser> UserStore
-@inject SignInManager<IdentityUser> SignInManager
-@* @inject IEmailSender<IdentityUser> EmailSender *@
+@inject UserManager<User> UserManager
+@inject IUserStore<User> UserStore
+@inject SignInManager<User> SignInManager
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Register</PageTitle>
 
-<div class="main-content">
-    <div class="block-content">
-        <div class="title">
-            <div class="title-header-text">Register</div>
-            <div class="title-content-text">Create a new Account.</div>
-        </div>
+<div class="h-100 w-100 d-flex justify-content-center align-items-center">
+    <div id="loginContainer">
         <StatusMessage Message="@Message" />
         <EditForm Model="@Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register" Context="register">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <DxFormLayout CaptionPosition=@CaptionPosition.Vertical>
-                <DxFormLayoutItem Caption="Email" ColSpanMd="12" BeginRow="true">
-                    <InteractiveServerTextBox Name="Input.Email" Value="@Input.Email" />
-                </DxFormLayoutItem>
-                <DxFormLayoutItem Caption="Password" ColSpanMd="12" BeginRow="true">
-                    <InteractiveServerTextBox Name="Input.Password" Value="@Input.Password" Password="true" />
-                </DxFormLayoutItem>
-                <DxFormLayoutItem Caption="Confirm Password" ColSpanMd="12" BeginRow="true">
-                    <InteractiveServerTextBox Name="Input.ConfirmPassword" Value="@Input.ConfirmPassword" Password="true" />
-                </DxFormLayoutItem>
-                <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
-                    <DxButton CssClass="w-100" SubmitFormOnClick="true" Text="Register"></DxButton>
-                </DxFormLayoutItem>
-            </DxFormLayout>
+            <div class="loginTitle">Rejestracja</div>
+            <div class="w-100">
+                <InputText type="text"
+                           placeholder="imię"
+                           onfocus="this.placeholder=''"
+                           onblur="this.placeholder='imię'"
+                           @bind-Value="Input.Name" />
+                <ValidationMessage For="() => Input.Name"></ValidationMessage>
+            </div>
+            <div class="w-100">
+                <InputText type="text"
+                           placeholder="Nazwisko"
+                           onfocus="this.placeholder=''"
+                           onblur="this.placeholder='nazwisko'"
+                           @bind-Value="Input.Surname" />
+                <ValidationMessage For="() => Input.Surname"></ValidationMessage>
+            </div>
+            <div class="w-100">
+                <InputText type="text"
+                           placeholder="login"
+                           onfocus="this.placeholder=''"
+                           onblur="this.placeholder='login'"
+                           @bind-Value="Input.Login" />
+                <ValidationMessage For="() => Input.Login"></ValidationMessage>
+            </div>
+            <div class="w-100">
+                <InputText type="email"
+                           placeholder="email"
+                           onfocus="this.placeholder=''"
+                           onblur="this.placeholder='email'"
+                           @bind-Value="Input.Email" />
+                <ValidationMessage For="() => Input.Email"></ValidationMessage>
+            </div>
+            <div class="w-100">
+                <InputText type="password"
+                           placeholder="hasło"
+                           onfocus="this.placeholder=''"
+                           onblur="this.placeholder='hasło'"
+                           @bind-Value="Input.Password" />
+                <ValidationMessage For="() => Input.Password"></ValidationMessage>
+            </div>
+            <div class="w-100">
+                <InputText type="password"
+                           placeholder="powtórz hasło"
+                           onfocus="this.placeholder=''"
+                           onblur="this.placeholder='powtórz hasło'"
+                           @bind-Value="Input.ConfirmPassword" />
+                <ValidationMessage For="() => Input.ConfirmPassword"></ValidationMessage>
+            </div>
+            <button type="submit">Zarejestruj</button>
+            <div class="registerProposition">Masz już konto?<a class="register" href="/login"> Zaloguj się</a></div>
         </EditForm>
     </div>
 </div>
+
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
@@ -58,10 +90,12 @@
 
     public async Task RegisterUser(EditContext editContext) {
         var user = CreateUser();
+        user.FirstName = Input.Name;
+        user.LastName = Input.Surname;
 
-        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        await UserStore.SetUserNameAsync(user, Input.Login, CancellationToken.None);
         var emailStore = GetEmailStore();
-        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        await emailStore.SetEmailAsync(user, Input.Login, CancellationToken.None);
         var result = await UserManager.CreateAsync(user, Input.Password);
 
         if(!result.Succeeded) {
@@ -78,35 +112,40 @@
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
 
-        // await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
-
-        if(UserManager.Options.SignIn.RequireConfirmedAccount) {
-            RedirectManager.RedirectTo(
-                "Account/RegisterConfirmation",
-                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
-        }
-
+        await UserManager.AddToRoleAsync(user, "StandardUser");
         await SignInManager.SignInAsync(user, isPersistent: false);
         RedirectManager.RedirectTo(ReturnUrl);
     }
 
-    private IdentityUser CreateUser() {
+    private User CreateUser() {
         try {
-            return Activator.CreateInstance<IdentityUser>();
+            return Activator.CreateInstance<User>();
         } catch {
-            throw new InvalidOperationException($"Can't create an instance of '{nameof(IdentityUser)}'. " +
-                $"Ensure that '{nameof(IdentityUser)}' is not an abstract class and has a parameterless constructor.");
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(User)}'. " +
+                $"Ensure that '{nameof(User)}' is not an abstract class and has a parameterless constructor.");
         }
     }
 
-    private IUserEmailStore<IdentityUser> GetEmailStore() {
+    private IUserEmailStore<User> GetEmailStore() {
         if(!UserManager.SupportsUserEmail) {
             throw new NotSupportedException("The default UI requires a user store with email support.");
         }
-        return (IUserEmailStore<IdentityUser>)UserStore;
+        return (IUserEmailStore<User>)UserStore;
     }
 
     private sealed class InputModel {
+        [Required]
+        [Display(Name = "Imię")]
+        public string Name { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Nazwisko")]
+        public string Surname { get; set; } = "";
+
+        [Required]
+        [Display(Name = "Login")]
+        public string Login { get; set; } = "";
+
         [Required]
         [EmailAddress]
         [Display(Name = "Email")]

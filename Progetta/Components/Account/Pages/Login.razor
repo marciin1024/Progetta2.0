@@ -4,46 +4,43 @@
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 
-@inject SignInManager<IdentityUser> SignInManager
+@inject SignInManager<User> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+
 <PageTitle>Log in</PageTitle>
 
-<div class="main-content">
-    <div class="block-content">
-        <div class="title">
-            <div class="title-header-text">Log in</div>
-            <div class="title-content-text">Use a local account to log in.</div>
-        </div>
+<div class="h-100 w-100 d-flex justify-content-center align-items-center">
+    <div id="loginContainer">
         <StatusMessage Message="@errorMessage" />
-        <EditForm Model="@Input" method="post" OnValidSubmit="LoginUser" FormName="login" Context="Login">
+        <EditForm class="d-flex flex-column" Model="Input" OnValidSubmit="LoginUser" FormName="login" Context="Login">
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <DxFormLayout CaptionPosition=@CaptionPosition.Vertical>
-                <DxFormLayoutItem Caption="Email" ColSpanMd="12" BeginRow="true">
-                    <InteractiveServerTextBox Name="Input.Email" Value="@Input.Email" />
-                </DxFormLayoutItem>
-                <DxFormLayoutItem Caption="Password" ColSpanMd="12" BeginRow="true">
-                    <InteractiveServerTextBox Name="Input.Password" Value="@Input.Password" Password="true" />
-                </DxFormLayoutItem>
-                <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
-                    <InteractiveServerCheckbox Name="Input.RememberMe" InputId="rememberme" Value="@Input.RememberMe" LabelText="Remember me?"></InteractiveServerCheckbox>
-                </DxFormLayoutItem>
-                <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
-                    <DxButton CssClass="w-100" SubmitFormOnClick="true" Text="Login"></DxButton>
-                </DxFormLayoutItem>
-            </DxFormLayout>
+            <div class="w-100">
+                <div class="loginTitle">Logowanie</div>
+                <InputText type="text"
+                           placeholder="login"
+                           onfocus="this.placeholder=''"
+                           onblur="this.placeholder='email'"
+                           @bind-Value="Input.Login" />
+                <ValidationMessage For="() => Input.Login" />
+            </div>
+            <div class="w-100">
+                <InputText type="password"
+                            placeholder="hasło"
+                            onfocus="this.placeholder=''"
+                            onblur="this.placeholder='hasło'"
+                            @bind-Value="Input.Password" />
+                <ValidationMessage For="() => Input.Password" />
+            </div>
+            <button type="submit">Zaloguj się</button>
+            <div class="registerProposition">Nie masz konta?<a class="register" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))"> Zarejestruj się</a></div>
         </EditForm>
     </div>
 </div>
 
-
 @code {
     private string? errorMessage;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
@@ -52,16 +49,10 @@
     private string? ReturnUrl { get; set; }
 
     public async Task LoginUser() {
-        // This doesn't count login failures towards account lockout
-        // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        var result = await SignInManager.PasswordSignInAsync(Input.Login, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if(result.Succeeded) {
             Logger.LogInformation("User logged in.");
             RedirectManager.RedirectTo(ReturnUrl);
-        } else if(result.RequiresTwoFactor) {
-            RedirectManager.RedirectTo(
-                "Account/LoginWith2fa",
-                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
         } else if(result.IsLockedOut) {
             Logger.LogWarning("User account locked out.");
             RedirectManager.RedirectTo("Account/Lockout");
@@ -72,8 +63,7 @@
 
     private sealed class InputModel {
         [Required]
-        // [EmailAddress]
-        public string Email { get; set; } = "";
+        public string Login { get; set; } = "";
 
         [Required]
         [DataType(DataType.Password)]

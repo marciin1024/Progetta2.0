@@ -105,6 +105,13 @@ namespace Progetta.Services
                 .ToListAsync();
         }
 
+        public async Task AddCategoryAsync(Category category)
+        {
+            using ProjectContext context = await _contextFactory.CreateDbContextAsync();
+            context.Category.Add(category);
+            await context.SaveChangesAsync();
+        }
+
         public async Task<Project> GetProjectByIdAsync(int projectId)
         {
             using ProjectContext context = _contextFactory.CreateDbContext();

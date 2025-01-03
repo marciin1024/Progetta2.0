@@ -1,20 +1,17 @@
-﻿using Progetta.Enums;
+﻿using Microsoft.AspNetCore.Identity;
+using Progetta.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace Progetta.Entities
 {
-    public class User
+    public class User : IdentityUser<int>
     {
-        public int Id { get; set; }
         [MaxLength(100)]
         public string FirstName { get; set; }
+
         [MaxLength(100)]
         public string LastName { get; set; }
-        [MaxLength(255)]
-        [EmailAddress]
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public UserRole Role { get; set; }
+
         public LabelId LabelId { get; set; } = LabelId.Light;
 
         public string FullName => $"{FirstName} {LastName}";
@@ -29,11 +26,5 @@ namespace Progetta.Entities
         {
             return FullName;
         }
-    }
-
-    public enum UserRole
-    {
-        Admin,
-        User
     }
 }

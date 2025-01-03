@@ -5,8 +5,7 @@
 <div class="page">
     <AuthorizeView>
         <Authorized>
-
-            <Drawer DrawerHeader="drawerHeader">
+            <Drawer DrawerHeader="drawerHeader" DrawerFooter="drawerFooter">
                 <DrawerBody>
                     <div class="w-100">
                         <NavMenu></NavMenu>
@@ -61,12 +60,9 @@
         </NavLink>
     </div>;
 
-    private RenderFragment drawerFooter => @<div>
-        <NavLink href="https://docs.devexpress.com/Blazor/400725/blazor-components" class="button-link">
-            <DxButton Text="Docs" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="footer-button" RenderStyle="@ButtonRenderStyle.Light" IconCssClass="icon docs-icon"></DxButton>
-        </NavLink>
-        <NavLink href="https://demos.devexpress.com/blazor/" class="button-link">
-            <DxButton Text="Demos" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="footer-button" RenderStyle="@ButtonRenderStyle.Light" IconCssClass="icon demos-icon"></DxButton>
+    private RenderFragment drawerFooter => @<div class="pb-5">
+        <NavLink href="/Account/Logout" class="button-link">
+            <DxButton Text="Logout" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="footer-button" RenderStyle="@ButtonRenderStyle.Light" IconCssClass="icon docs-icon"></DxButton>
         </NavLink>
     </div>;
 }
