@@ -34,7 +34,7 @@
                 <ValidationMessage For="() => Input.Password" />
             </div>
             <button type="submit">Zaloguj się</button>
-            <div class="registerProposition">Nie masz konta?<a class="register" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))"> Zarejestruj się</a></div>
+            <div class="registerProposition">Nie masz konta?<a class="register" href="@(NavigationManager.GetUriWithQueryParameters("/register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))"> Zarejestruj się</a></div>
         </EditForm>
     </div>
 </div>

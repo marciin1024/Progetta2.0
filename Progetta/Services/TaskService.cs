@@ -24,10 +24,35 @@ namespace Progetta.Services
             TimeOnly timeOnlyStartAt = new TimeOnly(DateTime.Now.Hour + 1, 0, 0);
             TimeOnly timeOnlyDayEnd = new TimeOnly(23, 59, 0);
 
-            task.StartAt = new DateTime(dateOnlyNow, timeOnlyStartAt);
-            task.DueDate = new DateTime(dateOnlyNow, timeOnlyDayEnd);
-            task.CreatedAt = DateTime.UtcNow;
-            context.TasksToDo.Add(task);
+            TaskToDo taskToDo = new TaskToDo();
+            taskToDo.Name = task.Name;
+            taskToDo.Description = task.Description;
+            taskToDo.Status = task.Status;
+            taskToDo.Priority = task.Priority;
+            taskToDo.AssignedToId = task.AssignedTo?.Id;
+            taskToDo.CreatedById = task.CreatedBy?.Id;
+            taskToDo.ProjectId = task.Project.Id;
+
+            if (task.StartAt is null)
+            {
+                taskToDo.StartAt = new DateTime(dateOnlyNow, timeOnlyStartAt);
+            }
+            else
+            {
+                taskToDo.StartAt = task.StartAt;
+            }
+
+            if(task.DueDate is null)
+            {
+                taskToDo.DueDate = new DateTime(dateOnlyNow, timeOnlyDayEnd);
+            }
+            else
+            {
+                taskToDo.DueDate = task.DueDate;
+            }
+
+            taskToDo.CreatedAt = DateTime.UtcNow;
+            context.TasksToDo.Add(taskToDo);
             await context.SaveChangesAsync();
         }
 

@@ -16,6 +16,7 @@ namespace Progetta.Services
         {
             using ProjectContext context = _contextFactory.CreateDbContext();
             return await context.Users
+                .AsNoTracking()
                 .Include(u => u.AssignedTasks)
                 .OrderBy(u => u.FirstName)
                 .ToListAsync();

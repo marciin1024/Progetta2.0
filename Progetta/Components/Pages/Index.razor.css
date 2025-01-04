@@ -21,8 +21,8 @@
 }
 
 ::deep .welcome-card {
-    width: 20.25rem;
-    height: 12rem;
+    width: 23.25rem;
+    height: 14.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -46,7 +46,7 @@
     }
 
     ::deep .welcome-card .welcome-card-text {
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 600;
         letter-spacing: 0em;
         text-align: center;
@@ -54,7 +54,7 @@
     }
 
     ::deep .welcome-card .welcome-card-subtext {
-        padding: 0.5rem;
+        padding: 0.25rem;
         font-size: 1.25rem;
         font-weight: 400;
         letter-spacing: 0em;

@@ -40,6 +40,21 @@ namespace Progetta.Services
                 .ToListAsync();
         }
 
+        public List<Project> GetAllProjects()
+        {
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return context.Projects
+                .Include(project => project.Category)
+                .Include(project => project.Owner)
+                .Include(project => project.Owner)
+                .Include(project => project.Category)
+                .Include(project => project.UserProjects)
+                .ThenInclude(up => up.Username)
+                .Include(project => project.Tasks)
+                .OrderBy(t => t.CreatedAt)
+                .ToList();
+        }
+
         // 3. Aktualizacja projektu
         public async Task UpdateProjectAsync(Project project, IEnumerable<User> users)
         {

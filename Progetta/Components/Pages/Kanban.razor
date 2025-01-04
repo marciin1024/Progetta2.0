@@ -1,5 +1,5 @@
 ﻿@page "/kanban"
-@attribute [Authorize(Roles = "Administrator")]
+@attribute [Authorize(Roles = "Administrator, StandardUser")]
 @rendermode InteractiveServer
 @inject TaskService TaskService
 @inject UserService UserService

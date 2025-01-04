@@ -5,6 +5,10 @@ using Progetta.Entities;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Progetta.Components.Account;
+using Syncfusion.Blazor;
+using Syncfusion.Licensing;
+
+SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NMaF5cXmBCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWX5edHRcRGdeUUNwX0A=");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,12 +16,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+builder.Services.AddDevExpressServerSideBlazorReportViewer();
 builder.Services.AddDevExpressBlazor(options => {
     options.BootstrapVersion = DevExpress.Blazor.BootstrapVersion.v5;
     options.SizeMode = DevExpress.Blazor.SizeMode.Medium;
 });
+builder.Services.AddDevExpressServerSideBlazorReportViewer();
 builder.Services.AddMvc();
 
+builder.Services.AddSyncfusionBlazor();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
@@ -55,6 +64,8 @@ builder.Services
     .AddSignInManager<SignInManager<User>>()
     .AddRoleManager<RoleManager<IdentityRole<int>>>()
     .AddDefaultTokenProviders();
+
+builder.WebHost.UseStaticWebAssets();
 
 var app = builder.Build();
 
