@@ -40,7 +40,7 @@
 
 ::deep button[type=submit] {
     width: 300px;
-    background-color: #CEAC66;
+    background-color: #f2b84b;
     font-size: 20px;
     color: white;
     padding: 15px 10px;
@@ -73,7 +73,7 @@
 }
 
 .register {
-    color: #CEAC66;
+    color: #f2b84b;
 }
 
     .register:hover {

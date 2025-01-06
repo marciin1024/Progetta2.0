@@ -4,9 +4,9 @@
 <DxPopup @bind-Visible="@Visible"
          HeaderText="Edytuj Zadanie"
          CloseButtonClick="OnCloseButtonClick"
-         ShowFooter="true">
+         ShowFooter="true" CssClass="task-popup">
     <BodyTemplate Context="PopupContext">
-        <div style="padding-top: 1rem; padding-bottom: 1rem">
+        <div style="padding: 1rem; width: 860px">
             <DxFormLayout>
                 <DxFormLayoutItem Caption="Nazwa zadania:" ColSpanMd="12">
                     <Template>
@@ -22,6 +22,8 @@
                                 InputId="memoCustomSize" />
                     </Template>
                 </DxFormLayoutItem>
+            <div style="width: 400px; margin-top: 40px">
+                <div class="form-view">
                 <DxFormLayoutItem Caption="Priorytet:" ColSpanMd="12">
                     <Template>
                         <PriorityComboBox
@@ -37,6 +39,8 @@
                             SelectedStatusChanged="(status) => Task.Status = status"></StatusComboBox>
                     </Template>
                 </DxFormLayoutItem>
+                </div>
+                <div class="form-view">
                 <DxFormLayoutItem Caption="Projekt:" ColSpanMd="12">
                     <Template>
                         <ProjectComboBox
@@ -52,6 +56,8 @@
                         ></UserComboBox>
                     </Template>
                 </DxFormLayoutItem>
+                </div>
+                <div class="form-view">
                 <DxFormLayoutItem Caption="Data rozpoczęcia:" ColSpanMd="12">
                     <Template>
                         <DxDateEdit @bind-Date="@Task.StartAt"
@@ -66,12 +72,12 @@
                                     TimeSectionScrollPickerFormat="HH mm" />
                     </Template>
                 </DxFormLayoutItem>
+                </div>
                 <DxFormLayoutItem Caption="Tagi:" ColSpanMd="12">
                     <Template Context="CategoryContext">
                         <div class="category">
                             <div style="width: 90%; box-sizing: border-box;" class="d-flex justify-content-end">
                                 <div style="width: 90%; box-sizing: border-box;">
-                                    <TagBox></TagBox>
                                 </div>
                             </div>
                             <div style="width: 10%; box-sizing: border-box;" class="d-flex justify-content-center align-content-center">
@@ -86,47 +92,60 @@
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Dodał:" ColSpanMd="12">
                     <Template>
+                        <div class="task-info">
                         <span>@Task.CreatedBy</span>
+                        </div>
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Data utworzenia:" ColSpanMd="12">
                     <Template>
+                        <div class="task-info">
                         <span>@Task.CreatedAt</span>
+                        </div>
                     </Template>
                 </DxFormLayoutItem>
                 <DxFormLayoutItem Caption="Data ostatniej aktualizacji:" ColSpanMd="12">
                     <Template>
+                        <div class="task-info">
                         <span>@Task.UpdatedAt</span>
+                            </div>
                     </Template>
                 </DxFormLayoutItem>
+        </div>
                 <DxSchedulerCustomFormLayoutItem>
                     <Template>
-                        <div>
+                        <div class="comments">
                             @if (Task.Comments is not null)
                             {
                                 @foreach (Comment comment in Task.Comments)
                                 {
-                                    <div>
+                                    <div class="message-box">
+                                        <div class="message-details">
                                         <p>
                                             @comment.User?.FullName
+                                            
                                         </p>
-                                        <p>
-                                            @comment.CreatedAt
-                                        </p>
+                                            <p>
+                                                
+                                                @comment.CreatedAt
+                                            </p>
+                                        </div>
+                                    <div class="message-text">
                                         <p>
                                             @comment.Message
                                         </p>
+                                        </div>
                                     </div>
                                 }
                             }
                         </div>
 
                         <DxFormLayout CaptionPosition=@CaptionPosition.Vertical>
-                            <DxFormLayoutItem Caption="Message" ColSpanMd="12" BeginRow="true">
+                            <DxFormLayoutItem Caption="Dodaj komentarz" ColSpanMd="12" BeginRow="true" CssClass="add-comment">
                                 <DxTextBox Name="Message" @bind-Text="Message" />
                             </DxFormLayoutItem>
                             <DxFormLayoutItem ColSpanMd="12" BeginRow="true">
-                                <DxButton CssClass="w-100" Text="Add" Click="OnAddCommentClick"></DxButton>
+                                <DxButton CssClass="w-40" Text="Dodaj" Click="OnAddCommentClick"></DxButton>
                             </DxFormLayoutItem>
                         </DxFormLayout>
                     </Template>
@@ -144,6 +163,7 @@
 
 @code {
     Tag tag;
+    private List<Tag> Tags { get; set; } = new List<Tag>();
     public bool TagFormVisible { get; set; } = false;
     public TaskPriority TaskPriority { get; set; }
     public Status Status { get; set; }
@@ -175,13 +195,13 @@
     void OnDueDateChanged(DateTime? date)
     {
         Task.DueDate = date;
-    }
+    }   
 
     void OnAddCommentClick()
     {
         Comment comment = new Comment
-        {
-            Message = Message
+            {
+                Message = Message,
         };
 
         Task.Comments.Add(comment);
@@ -190,18 +210,16 @@
     void OnStatusChanged(Status status)
     {
         Task.Status = status;
-        SaveTaskChanges();  // Zapisz zmiany po zmianie statusu
+        SaveTaskChanges(); 
     }
 
     async Task SaveTaskChanges()
     {
-        // Możesz wywołać metodę aktualizującą w bazie danych
         await TaskService.UpdateTaskToDoAsync(Task);
     }
 
     void OnOkButtonClick()
     {
-        // Można tu dodatkowo zapisać zmiany lub wykonać inne akcje
         SaveTaskChanges();
         SetVisiblity?.Invoke(false);
     }
@@ -221,6 +239,23 @@
     {
         TagFormVisible = true;
     }
+
+    // private void OnTagsChanged(IEnumerable<TaskTag> newTags)
+    // {
+    //     // Przypisz nową listę tagów do Task.TaskTags
+    //     Task.TaskTags = newTags.ToList();
+    // }
+
+     // private async Task OnTagsChanged(List<Tag> updatedTags)
+     // {
+     //     Tags = updatedTags;
+     // }
+
+
+    // <TagBox ProjectId="123"
+    //         SelectedTags="@Tags"
+    //         SelectedTagsChanged="OnTagsChanged">
+    // </TagBox>
 }
 
 

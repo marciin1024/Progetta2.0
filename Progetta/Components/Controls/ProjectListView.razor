@@ -20,22 +20,65 @@
         HighlightRowOnHover="true">
 
     <Columns>
-        <DxGridDataColumn FieldName="Name" MinWidth="350" />
-        <DxGridDataColumn FieldName="Description" MinWidth="80" />
-        <DxGridDataColumn FieldName="Status" MinWidth="80" />
-        <DxGridDataColumn FieldName="Priority" MinWidth="200" />
-        <DxGridDataColumn FieldName="AssignedToId" Caption="AssignedTo" MinWidth="150">
+        <DxGridDataColumn FieldName="Name" Caption="Nazwa" MinWidth="350" />
+        <DxGridDataColumn FieldName="Description" Caption="Opis" MinWidth="80" />
+        <DxGridDataColumn FieldName="Status" MinWidth="80">
+            <CellDisplayTemplate>
+                @{
+                    var status = (Status)context.Value;
+                    var backgroundColor = GetStatusBackgroundColor(status);
+                }
+                <div style="background-color: @backgroundColor; padding: 5px; width: 100%;">
+                    @status.ToString()
+                </div>
+            </CellDisplayTemplate>
+        </DxGridDataColumn>
+
+        <DxGridDataColumn FieldName="AssignedTo" Caption="Przydzielono do" MinWidth="150">
+            <EditSettings>
+                <DxComboBoxSettings Data="Users" TextFieldName="FullName" />
+            </EditSettings>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="Priority" Caption="Priorytet" MinWidth="200">
+            <CellDisplayTemplate>
+                @{
+                    var priority = (TaskPriority)context.Value;
+                    var backgroundColor = GetPriorityBackgroundColor(priority);
+                }
+                <div style="background-color: @backgroundColor; padding: 5px; width: 100%;">
+                    @priority.ToString()
+                </div>
+            </CellDisplayTemplate>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="CreatedById" Caption="Dodał" MinWidth="150">
             <EditSettings>
                 <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
             </EditSettings>
         </DxGridDataColumn>
-        <DxGridDataColumn FieldName="CreatedById" Caption="CreatedBy" MinWidth="150">
+        <DxGridDataColumn FieldName="StartAt" Caption="Data rozpoczęcia" Width="10%" MinWidth="80" DisplayFormat="dd/MM/yyyy HH:mm">
             <EditSettings>
-                <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
+                <DxDateEditSettings TimeSectionVisible="true"
+                                    Mask="@DateTimeMask.ShortDateTime"
+                                    TimeSectionScrollPickerFormat="HH mm" />
             </EditSettings>
         </DxGridDataColumn>
-        <DxGridDataColumn FieldName="StartAt" Width="10%" MinWidth="80" />
-        <DxGridDataColumn FieldName="DueDate" Width="10%" MinWidth="80" />
+        <DxGridDataColumn FieldName="DueDate" Caption="Termin wykonania" Width="10%" MinWidth="80" DisplayFormat="dd/MM/yyyy HH:mm">
+            <EditSettings>
+                <DxDateEditSettings TimeSectionVisible="true"
+                                    Mask="@DateTimeMask.ShortDateTime"
+                                    TimeSectionScrollPickerFormat="HH mm" />
+            </EditSettings>
+            <CellDisplayTemplate>
+                @{
+                    var dueDate = (DateTime)context.Value;
+                    var isOverdue = dueDate < DateTime.Now;
+                    var style = isOverdue ? "color: red;" : string.Empty;
+                }
+                <div style="@style">
+                    @dueDate.ToString("dd/MM/yyyy HH:mm")
+                </div>
+            </CellDisplayTemplate>
+        </DxGridDataColumn>
         <DxGridCommandColumn Width="30px">
             <HeaderTemplate>
                 <div class="grid-cell-align-center">
@@ -166,5 +209,28 @@
     {
         Task = Grid.GetDataItem(index) as TaskToDo;
         TaskToDoFormVisible = true;
+    }
+
+    public static string GetPriorityBackgroundColor(TaskPriority priority)
+    {
+        return priority switch
+        {
+
+            TaskPriority.Niski => "#16C47F",
+            TaskPriority.Średni => "#FFD65A",
+            TaskPriority.Wysoki => "#F93827",
+            _ => "transparent"
+        };
+    }
+
+    public static string GetStatusBackgroundColor(Status status)
+    {
+        return status switch
+        {
+            Status.ToDo => "#DEAA79",
+            Status.InProgress => "#FFE6A9",
+            Status.Done => "#B1C29E",
+            _ => "transparent"
+        };
     }
 }

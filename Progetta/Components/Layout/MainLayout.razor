@@ -20,7 +20,7 @@
                         @if (new Uri(NavigationManager.Uri).LocalPath != "/")
                         {
                             <NavLink href="@UrlGenerator.GetUrl("/", ToggledSidebar)" class="button-link hidden">
-                                <DxButton RenderStyle="@ButtonRenderStyle.Dark" Text="Back to Home" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="menu-button-nav" IconCssClass="icon icon-back"></DxButton>
+                                <DxButton RenderStyle="@ButtonRenderStyle.Dark" Text="Powrót do strony głównej" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="menu-button-nav" IconCssClass="icon icon-back"></DxButton>
                             </NavLink>
                         }
                     </div>
@@ -62,7 +62,7 @@
 
     private RenderFragment drawerFooter => @<div class="pb-5">
         <NavLink href="/Account/Logout" class="button-link">
-            <DxButton Text="Logout" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="footer-button" RenderStyle="@ButtonRenderStyle.Light" IconCssClass="icon docs-icon"></DxButton>
+            <DxButton Text="Wyloguj" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="footer-button" RenderStyle="@ButtonRenderStyle.Light" IconCssClass="icon-log-out"></DxButton>
         </NavLink>
     </div>;
 }

@@ -1,6 +1,10 @@
 ﻿@page "/Gantt"
+@attribute [Authorize(Roles = "Administrator,StandardUser")]
 @rendermode InteractiveServer
 @inject ProjectService ProjectService
+
+<h3>Diagram Gantta</h3>
+<br />
 
 <div class="h-100 w-100">
   <SfGantt DataSource="@GanttItems" Height="80%" Width="100%" HighlightWeekends="true" TreeColumnIndex="1"

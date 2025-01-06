@@ -1,16 +1,16 @@
 ﻿@page "/dashboard"
+@attribute [Authorize(Roles = "Administrator,StandardUser")]
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 @inject TaskService TaskService
 @inject ProjectService DataProvider
 @inject UserService UserService
 
-<h3>Dashboard</h3>
+<h3>Wykresy</h3>
 <br />
 
 <DxChart T="Project" Data="@ChartsData" Width="100%">
-    <DxChartTitle Text="Project Tasks by Status">
-        <DxChartSubTitle Text="Task Distribution Overview" />
+    <DxChartTitle Text="Zadania w projektach według statusu">
     </DxChartTitle>
 
     <DxChartBarSeries Name="To Do"
@@ -45,7 +45,7 @@
         <div style="margin: 0.75rem">
             <div class="fw-bold">@context.Point.Argument</div>
             <div>Status: @context.Point.SeriesName</div>
-            <div>Tasks: @context.Point.Value</div>
+            <div>Ilość zadań: @context.Point.Value</div>
         </div>
     </DxChartTooltip>
 </DxChart>
@@ -79,11 +79,10 @@
                     Position="RelativePosition.Outside">
         <div style="margin: 0.75rem">
             <div class="fw-bold">@context.Point.Argument</div>
-            <div>Projects: @($"{context.Point.Value:#,0.}")</div>
+            <div>Projekty: @($"{context.Point.Value:#,0.}")</div>
         </div>
     </DxChartTooltip>
-    <DxChartTitle Text="Projects by Category">
-        <DxChartSubTitle Text="Total Projects per Category" />
+    <DxChartTitle Text="Projekty według kategorii">
     </DxChartTitle>
     <DxChartLegend HorizontalAlignment="HorizontalAlignment.Center"
                    VerticalAlignment="VerticalEdge.Bottom"
@@ -119,11 +118,11 @@
                     Position="RelativePosition.Outside">
         <div style="margin: 0.75rem">
             <div class="fw-bold">@context.Point.Argument</div>
-            <div>Projects: @($"{context.Point.Value:#,0.}")</div>
+            <div>Projekty: @($"{context.Point.Value:#,0.}")</div>
         </div>
     </DxChartTooltip>
-    <DxChartTitle Text="Tasks by End Date">
-        <DxChartSubTitle Text="Total Tasks per Month" />
+    <DxChartTitle Text="Zadania według miesiąca zakończenia">
+      
     </DxChartTitle>
     <DxChartLegend HorizontalAlignment="HorizontalAlignment.Center"
                    VerticalAlignment="VerticalEdge.Bottom"
@@ -142,12 +141,12 @@
          T="TaskToDo"
          Width="100%"
          Height="400px">
-    <DxChartTitle Text="Tasks by Date and Time" />
+    <DxChartTitle Text="Natężenie zadań według daty i czasu" />
     <DxChartScatterSeries T="TaskToDo"
                           TArgument="int"
                           TValue="double"
                           Data="TasksData"
-                          Name="Tasks"
+                          Name="Zadania"
                           ArgumentField="point => point.DueDate.HasValue ? point.DueDate.Value.Day : 0"
                           ValueField="point => point.DueDate.HasValue ? point.DueDate.Value.Hour + point.DueDate.Value.Minute / 60.0 : 0">
         <DxChartSeriesPoint Symbol=ChartPointSymbol.Circle
@@ -157,8 +156,8 @@
     <DxChartTooltip Enabled="true"
                     Position="RelativePosition.Outside">
         <div style="margin: 0.75rem">
-            <div class="fw-bold">Task: @GetTaskName(Convert.ToInt32(@context.Point.Argument))</div>
-            <div>Date: @GetFormattedDate(Convert.ToInt32(@context.Point.Argument))</div>
+            <div class="fw-bold">Zadanie: @GetTaskName(Convert.ToInt32(@context.Point.Argument))</div>
+            <div>Termin wykonania: @GetFormattedDate(Convert.ToInt32(@context.Point.Argument))</div>
         </div>
     </DxChartTooltip>
     <DxChartLegend HoverMode="ChartLegendHoverMode.None" />
@@ -172,16 +171,17 @@
 <br />
 
 <DxChart T="User" Data="@UserChartsData" Width="100%">
-    <DxChartTitle Text="Tasks Assigned to Users">
-        <DxChartSubTitle Text="Total Tasks per User" />
+    <DxChartTitle Text="Zadania przydzielone do użytkownika">
+        <DxChartSubTitle Text="Ilość godzin potrzebna na wykonanie zadań" />
     </DxChartTitle>
 
-    <DxChartBarSeries Name="Total Tasks"
+    <DxChartBarSeries Name="Czas wykonania zadań"
                       T="User"
                       TArgument="string"
                       TValue="int"
                       ArgumentField="u => u.FullName"
-                      ValueField="u => u.AssignedTasks != null ? u.AssignedTasks.Count : 0"
+                      ValueField="u => u.AssignedTasks != null ?
+                          (int)u.AssignedTasks.Sum(t => CalculateWorkingHours(t.StartAt, t.DueDate)) : 0"
                       Color="@System.Drawing.Color.FromArgb(255, 163, 102)"
                       SummaryMethod="Enumerable.Sum" />
 
@@ -192,7 +192,7 @@
     <DxChartTooltip Enabled="true" Position="RelativePosition.Outside">
         <div style="margin: 0.75rem">
             <div class="fw-bold">@context.Point.Argument</div>
-            <div>Total Assigned Tasks: @context.Point.Value</div>
+            <div>Ilość godzin: @context.Point.Value</div>
         </div>
     </DxChartTooltip>
 </DxChart>
@@ -259,5 +259,42 @@
             return formattedDate;
         }
         return "No Date";  
+    }
+
+    private double CalculateWorkingHours(DateTime? start, DateTime? end)
+    {
+        if (!start.HasValue || !end.HasValue) return 0;
+
+        var startDate = start.Value;
+        var endDate = end.Value;
+        double totalHours = 0;
+
+        while (startDate <= endDate)
+        {
+            if (startDate.DayOfWeek != DayOfWeek.Saturday &&
+                startDate.DayOfWeek != DayOfWeek.Sunday)
+            {
+                var dayStart = new DateTime(startDate.Year, startDate.Month, startDate.Day, 8, 0, 0);
+                var dayEnd = new DateTime(startDate.Year, startDate.Month, startDate.Day, 16, 0, 0);
+
+                if (startDate.Date == start.Value.Date)
+                    dayStart = start.Value;
+                if (startDate.Date == endDate.Date)
+                    dayEnd = endDate;
+
+                if (dayStart.TimeOfDay < new TimeSpan(16, 0, 0) &&
+                    dayEnd.TimeOfDay > new TimeSpan(8, 0, 0))
+                {
+                    dayStart = dayStart.TimeOfDay < new TimeSpan(8, 0, 0) ?
+                        dayStart.Date.AddHours(8) : dayStart;
+                    dayEnd = dayEnd.TimeOfDay > new TimeSpan(16, 0, 0) ?
+                        dayEnd.Date.AddHours(16) : dayEnd;
+
+                    totalHours += (dayEnd - dayStart).TotalHours;
+                }
+            }
+            startDate = startDate.AddDays(1);
+        }
+        return totalHours;
     }
 }

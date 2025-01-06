@@ -1,10 +1,12 @@
 ﻿@page "/scheduler"
-@attribute [Authorize]
-
+@attribute [Authorize(Roles = "Administrator,StandardUser")]
 @rendermode InteractiveServer
 @inject TaskService TaskService
 @inject UserService UserService
 @inject IDbContextFactory<ProjectContext> ContextFactory;
+
+<h3>Kalendarz</h3>
+<br />
 
 <DxScheduler @rendermode="InteractiveAuto"
              @bind-StartDate="@StartDate"

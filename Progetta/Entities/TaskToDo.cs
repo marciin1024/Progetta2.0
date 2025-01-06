@@ -10,7 +10,7 @@ namespace Progetta.Entities
         public string Name { get; set; }
         public string? Description { get; set; }
         public Status Status { get; set; } = Status.ToDo;
-        public TaskPriority Priority { get; set; } = TaskPriority.Medium;
+        public TaskPriority Priority { get; set; } = TaskPriority.Średni;
         public DateTime? StartAt { get; set; }
 
         public DateTime? DueDate { get; set; }
@@ -48,8 +48,8 @@ namespace Progetta.Entities
 
     public enum TaskPriority
     {
-        Low,
-        Medium,
-        High
+        Niski,
+        Średni,
+        Wysoki
     }
 }

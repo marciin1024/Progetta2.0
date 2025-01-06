@@ -93,9 +93,9 @@
     {
         return Task.Priority switch
         {
-            TaskPriority.Low => "bg-success",
-            TaskPriority.Medium => "bg-warning",
-            TaskPriority.High => "bg-danger",
+            TaskPriority.Niski => "bg-success",
+            TaskPriority.Średni => "bg-warning",
+            TaskPriority.Wysoki => "bg-danger",
             _ => "bg-secondary"
         };
     }

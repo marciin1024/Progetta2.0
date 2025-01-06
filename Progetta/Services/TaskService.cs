@@ -31,7 +31,8 @@ namespace Progetta.Services
             taskToDo.Priority = task.Priority;
             taskToDo.AssignedToId = task.AssignedTo?.Id;
             taskToDo.CreatedById = task.CreatedBy?.Id;
-            taskToDo.ProjectId = task.Project.Id;
+            taskToDo.ProjectId = 10;
+            //taskToDo.ProjectId = task.Project.Id;
 
             if (task.StartAt is null)
             {
@@ -207,6 +208,66 @@ namespace Progetta.Services
             context.Tags.Add(tag);
             await context.SaveChangesAsync();
         }
+
+        public async Task<List<Tag>> GetTaskTagsAsync(int taskId)
+        {
+            using ProjectContext context = await _contextFactory.CreateDbContextAsync();
+
+            var task = await context.TasksToDo
+                .Include(t => t.TaskTags)
+                .ThenInclude(tt => tt.Tag)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+
+            if (task == null)
+            {
+                throw new Exception($"Task with ID {taskId} not found.");
+            }
+
+            // Zwrócenie listy tagów przypisanych do zadania
+            return task.TaskTags.Select(tt => tt.Tag).ToList();
+        }
+
+        public async Task UpdateTaskTagsAsync(int taskId, IEnumerable<Tag> tags)
+        {
+            using ProjectContext context = await _contextFactory.CreateDbContextAsync();
+
+            var task = await context.TasksToDo
+                .Include(t => t.TaskTags)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+
+            if (task == null)
+            {
+                throw new Exception($"Task with ID {taskId} not found.");
+            }
+
+            // Usunięcie istniejących powiązań tagów z zadaniem
+            if (task.TaskTags != null && task.TaskTags.Any())
+            {
+                context.TaskTags.RemoveRange(task.TaskTags);
+            }
+
+            // Dodanie nowych tagów do zadania
+            foreach (var tag in tags)
+            {
+                var existingTag = await context.Tags.FirstOrDefaultAsync(t => t.Id == tag.Id);
+                if (existingTag == null)
+                {
+                    throw new Exception($"Tag with ID {tag.Id} not found.");
+                }
+
+                var taskTag = new TaskTag
+                {
+                    TaskId = taskId,
+                    TagId = tag.Id
+                };
+
+                context.TaskTags.Add(taskTag);
+            }
+
+            // Zapisanie zmian
+            await context.SaveChangesAsync();
+        }
+
 
     }
 }

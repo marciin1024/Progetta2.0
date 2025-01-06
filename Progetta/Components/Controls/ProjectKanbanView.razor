@@ -123,9 +123,9 @@
     {
         return task.Priority switch
         {
-            TaskPriority.High => "alert-danger",
-            TaskPriority.Medium => "alert-warning",
-            TaskPriority.Low => "alert-success",
+            TaskPriority.Wysoki => "alert-danger",
+            TaskPriority.Średni => "alert-warning",
+            TaskPriority.Niski => "alert-success",
             _ => "alert-primary"
         };
     }
