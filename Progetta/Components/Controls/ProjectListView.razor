@@ -4,6 +4,7 @@
 @inject UserService UserService
 @inject ProjectService ProjectService
 @inject NavigationManager Navigation
+@inject IDbContextFactory<ProjectContext> ContextFactory;
 
 <DxGrid @ref="Grid"
         PageSize="20"
@@ -70,13 +71,25 @@
             </EditSettings>
             <CellDisplayTemplate>
                 @{
-                    var dueDate = (DateTime)context.Value;
-                    var isOverdue = dueDate < DateTime.Now;
-                    var style = isOverdue ? "color: red;" : string.Empty;
+                    string style = string.Empty;
+                    DateTime? dueDate = context.Value as DateTime?;
+                    if (dueDate is not null)
+                    {
+                        style = dueDate < DateTime.Now ? "color: red;" : string.Empty;
+                    }
                 }
-                <div style="@style">
-                    @dueDate.ToString("dd/MM/yyyy HH:mm")
-                </div>
+
+                @if(dueDate is DateTime d)
+                {
+                    if (!string.IsNullOrWhiteSpace(style))
+                    {
+                        <span style="@style">@d.ToString("dd/MM/yyyy HH:mm")</span>
+                    }
+                    else
+                    {
+                        <span>@d.ToString("dd/MM/yyyy HH:mm")</span>
+                    }
+                }
             </CellDisplayTemplate>
         </DxGridDataColumn>
         <DxGridCommandColumn Width="30px">
@@ -151,8 +164,8 @@
     protected override async Task OnInitializedAsync()
     {
         Users = await UserService.GetUsersAsync();
-        DataSource = await TaskService.GetAllTasksToDoAsync();
-        Projects = await ProjectService.GetAllProjectsAsync();
+        // Projects = await ProjectService.GetAllProjectsAsync();
+        // DataSource = await TaskService.GetAllTasksToDoAsync();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -185,7 +198,43 @@
         TaskToDo editableTask = (TaskToDo)e.EditModel;
         if (e.IsNew)
         {
-            await TaskService.AddTaskAsync(editableTask);
+            using ProjectContext context = await ContextFactory.CreateDbContextAsync();
+
+            DateOnly dateOnlyNow = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+            TimeOnly timeOnlyStartAt = new TimeOnly(DateTime.Now.Hour + 1, 0, 0);
+            TimeOnly timeOnlyDayEnd = new TimeOnly(23, 59, 0);
+
+            TaskToDo taskToDo = new TaskToDo();
+            taskToDo.Name = editableTask.Name;
+            taskToDo.Description = editableTask.Description;
+            taskToDo.Status = editableTask.Status;
+            taskToDo.Priority = editableTask.Priority;
+            taskToDo.AssignedToId = editableTask.AssignedTo?.Id;
+            taskToDo.CreatedById = editableTask.CreatedBy?.Id;
+            taskToDo.ProjectId = editableTask.ProjectId;
+            //taskToDo.ProjectId = task.Project.Id;
+
+            if (editableTask.StartAt is null)
+            {
+                taskToDo.StartAt = new DateTime(dateOnlyNow, timeOnlyStartAt);
+            }
+            else
+            {
+                taskToDo.StartAt = editableTask.StartAt;
+            }
+
+            if (editableTask.DueDate is null)
+            {
+                taskToDo.DueDate = new DateTime(dateOnlyNow, timeOnlyDayEnd);
+            }
+            else
+            {
+                taskToDo.DueDate = editableTask.DueDate;
+            }
+
+            taskToDo.CreatedAt = DateTime.UtcNow;
+            context.TasksToDo.Add(taskToDo);
+            await context.SaveChangesAsync();
         }
         else
         {
@@ -228,7 +277,7 @@
         return status switch
         {
             Status.ToDo => "#DEAA79",
-            Status.InProgress => "#FFE6A9",
+            Status.InProgress => "#789ECC",
             Status.Done => "#B1C29E",
             _ => "transparent"
         };

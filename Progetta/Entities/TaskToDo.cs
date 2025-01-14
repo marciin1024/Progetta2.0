@@ -23,11 +23,11 @@ namespace Progetta.Entities
 
         [ForeignKey(nameof(AssignedTo))]
         public int? AssignedToId { get; set; }
-        public User AssignedTo { get; set; }
+        public User? AssignedTo { get; set; }
 
         [ForeignKey(nameof(CreatedBy))]
         public int? CreatedById { get; set; }
-        public User CreatedBy { get; set; }
+        public User? CreatedBy { get; set; }
 
         public ICollection<Comment> Comments { get; set; }
         public ICollection<TaskTag> TaskTags { get; set; }

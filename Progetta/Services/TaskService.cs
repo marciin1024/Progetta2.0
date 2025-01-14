@@ -32,6 +32,7 @@ namespace Progetta.Services
             taskToDo.AssignedToId = task.AssignedTo?.Id;
             taskToDo.CreatedById = task.CreatedBy?.Id;
             taskToDo.ProjectId = 10;
+            //taskToDo.ProjectId = task.ProjectId;
             //taskToDo.ProjectId = task.Project.Id;
 
             if (task.StartAt is null)
@@ -64,6 +65,7 @@ namespace Progetta.Services
             return await context.TasksToDo
                 .Include(x => x.AssignedTo)
                 .Include(x => x.TaskTags)
+                .ThenInclude(x => x.Tag)
                 .Include(x => x.Project)
                 .Include(x => x.Comments)
                 .OrderBy(t => t.Status)  
@@ -77,6 +79,7 @@ namespace Progetta.Services
             return context.TasksToDo
                 .Include(x => x.AssignedTo)
                 .Include(x => x.TaskTags)
+                .ThenInclude(x => x.Tag)
                 .Include(x => x.Project)
                 .Include(x => x.Comments)
                 .OrderBy(t => t.Status)
@@ -92,16 +95,21 @@ namespace Progetta.Services
                 .Include(t => t.Project)
                 .Include(t => t.AssignedTo)
                 .Include(x => x.TaskTags)
+                .ThenInclude(x => x.Tag)
                 .Include(t => t.Comments)
                 .Include(t => t.TaskTags)
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
         // 4. Aktualizacja zadania
-        public async Task UpdateTaskToDoAsync(TaskToDo task)
+        public async Task UpdateTaskToDoAsync(TaskToDo task, List<Tag> tags = default)
         {
             using ProjectContext context = _contextFactory.CreateDbContext();
-            var existingTask = await context.TasksToDo.FindAsync(task.Id);
+            TaskToDo existingTask = await context.TasksToDo
+                .Include(x => x.Comments)
+                .Include(x => x.TaskTags)
+                .FirstOrDefaultAsync(x => x.Id == task.Id);
+
             if (existingTask == null)
             {
                 throw new Exception("TaskToDo not found.");
@@ -147,6 +155,36 @@ namespace Progetta.Services
 
             existingTask.StartAt = task.StartAt;
 
+            List<Comment> commentsToAdd = task.Comments.Where(x => x.Id == 0).ToList();
+            foreach(Comment comment in commentsToAdd)
+            {
+                comment.TaskId = existingTask.Id;
+                context.Add(comment);
+            }
+
+            if(tags is List<Tag> tagsSelected)
+            {
+                List<TaskTag> taskTagsToDelete = existingTask.TaskTags
+                    .Where(x => tagsSelected.All(t => t.Id != x.TagId))
+                    .ToList();
+
+                context.TaskTags.RemoveRange(taskTagsToDelete);
+
+                List<Tag> tagsToAdd = tagsSelected
+                    .Where(x => existingTask.TaskTags.All(t => t.TagId != x.Id))
+                    .ToList();
+
+                foreach (Tag tag in tagsToAdd)
+                {
+                    TaskTag taskTag = new TaskTag()
+                    {
+                        TagId = tag.Id,
+                        TaskId = task.Id
+                    };
+                    context.TaskTags.Add(taskTag);
+                }
+            }
+
             context.TasksToDo.Update(existingTask);
             await context.SaveChangesAsync();
         }
@@ -189,7 +227,13 @@ namespace Progetta.Services
         {
             using ProjectContext context = _contextFactory.CreateDbContext();
             return await context.TasksToDo
+                .Include(x => x.AssignedTo)
+                .Include(x => x.TaskTags)
+                .Include(x => x.Project)
+                .Include(x => x.Comments)
                 .Where(task => task.ProjectId == projectId)
+                .OrderBy(t => t.Status)
+                .ThenByDescending(t => t.Id)
                 .ToListAsync();
         }
 
@@ -200,6 +244,15 @@ namespace Progetta.Services
                 .Include(u => u.TaskTags)
                 .OrderBy(u => u.Name)
                 .ToListAsync();
+        }
+
+        public List<Tag> GetTags()
+        {
+            using ProjectContext context = _contextFactory.CreateDbContext();
+            return context.Tags
+                .Include(u => u.TaskTags)
+                .OrderBy(u => u.Name)
+                .ToList();
         }
 
         public async Task AddTagAsync(Tag tag)
@@ -217,6 +270,24 @@ namespace Progetta.Services
                 .Include(t => t.TaskTags)
                 .ThenInclude(tt => tt.Tag)
                 .FirstOrDefaultAsync(t => t.Id == taskId);
+
+            if (task == null)
+            {
+                throw new Exception($"Task with ID {taskId} not found.");
+            }
+
+            // Zwrócenie listy tagów przypisanych do zadania
+            return task.TaskTags.Select(tt => tt.Tag).ToList();
+        }
+
+        public List<Tag> GetTaskTags(int taskId)
+        {
+            using ProjectContext context = _contextFactory.CreateDbContext();
+
+            var task = context.TasksToDo
+                .Include(t => t.TaskTags)
+                .ThenInclude(tt => tt.Tag)
+                .FirstOrDefault(t => t.Id == taskId);
 
             if (task == null)
             {

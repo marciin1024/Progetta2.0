@@ -110,7 +110,6 @@ html, body {
 }
 
 .grid-container {
-    width: 60%;
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
@@ -241,4 +240,19 @@ html, body {
 
 .comments {
     margin-top: 30px;
+}
+
+.color-todo {
+    background-color: #DEAA79; 
+    color: white;
+}
+
+.color-inprogress {
+    background-color: #789ECC;
+    color: black;
+}
+
+.color-done {
+    background-color: #B1C29E; 
+    color: white;
 }

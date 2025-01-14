@@ -26,7 +26,6 @@
 
     <Columns>
         <DxGridDataColumn FieldName="Name" Caption="Nazwa" MinWidth="350" />
-        <DxGridDataColumn FieldName="Description" Caption="Opis" MinWidth="80" />
         <DxGridDataColumn FieldName="Status" MinWidth="80" >
         <CellDisplayTemplate>
                 @{
@@ -39,7 +38,7 @@
             </CellDisplayTemplate>
             </DxGridDataColumn>
         
-        <DxGridDataColumn FieldName="AssignedTo" Caption="Przydzielono do" MinWidth="150">
+        <DxGridDataColumn FieldName="AssignedTo" SortOrderChanged="AssignedToSortOrderChanged" Caption="Przydzielono do" MinWidth="150">
             <EditSettings>
                 <DxComboBoxSettings Data="Users" TextFieldName="FullName" />
             </EditSettings>
@@ -55,15 +54,28 @@
                 </div>
             </CellDisplayTemplate>
         </DxGridDataColumn>
-        <DxGridDataColumn FieldName="CreatedBy" Caption="Dodał" MinWidth="150">
+        <DxGridDataColumn FieldName="CreatedBy" SortOrderChanged="CreatedBySortOrderChanged" Caption="Dodał" AllowSort="true" MinWidth="150">
             <EditSettings>
                 <DxComboBoxSettings Data="Users" ValueFieldName="Id" TextFieldName="FullName" />
             </EditSettings>
         </DxGridDataColumn>
-        <DxGridDataColumn FieldName="Project" Caption="Projekt" Width="10%" MinWidth="80">
+        <DxGridDataColumn FieldName="Project" SortOrderChanged="ProjectSortOrderChanged" Caption="Projekt" Width="10%" MinWidth="80">
             <EditSettings>
                 <DxComboBoxSettings Data="Projects" ValueFieldName="Id" TextFieldName="Name" />
             </EditSettings>
+        </DxGridDataColumn>
+        <DxGridDataColumn FieldName="TaskTags" Caption="Tagi" MinWidth="200">
+            <CellDisplayTemplate>
+                @{
+                    ICollection<TaskTag> taskTags = (ICollection<TaskTag>)context.Value;
+                }
+                <div style="padding: 5px; width: 100%;">
+                    @foreach(TaskTag taskTag in taskTags)
+                    {
+                        <span style="background-color: red; padding-right: 5px;" >@taskTag.Tag.Name</span>
+                    }
+                </div>
+            </CellDisplayTemplate>
         </DxGridDataColumn>
         <DxGridDataColumn FieldName="StartAt" Caption="Data rozpoczęcia" Width="10%" MinWidth="80" DisplayFormat="dd/MM/yyyy HH:mm">
             <EditSettings>
@@ -78,7 +90,28 @@
                                     Mask="@DateTimeMask.ShortDateTime"
                                     TimeSectionScrollPickerFormat="HH mm" />
             </EditSettings>
-           
+            <CellDisplayTemplate>
+                @{
+                    string style = string.Empty;
+                    DateTime? dueDate = context.Value as DateTime?;
+                    if (dueDate is not null)
+                    {
+                        style = dueDate < DateTime.Now ? "color: red;" : string.Empty;
+                    }
+                }
+
+                @if (dueDate is DateTime d)
+                {
+                    if (!string.IsNullOrWhiteSpace(style))
+                    {
+                        <span style="@style">@d.ToString("dd/MM/yyyy HH:mm")</span>
+                    }
+                    else
+                    {
+                        <span>@d.ToString("dd/MM/yyyy HH:mm")</span>
+                    }
+                }
+            </CellDisplayTemplate>
         </DxGridDataColumn>
         <DxGridCommandColumn Width="30px">
             <HeaderTemplate>
@@ -134,7 +167,10 @@
     </Columns>
 </DxGrid>
 
-<TaskToDoForm Task="Task" Visible="TaskToDoFormVisible" SetVisiblity="SetVisiblity" />
+<TaskToDoForm Task="Task"
+    Visible="TaskToDoFormVisible"
+    SetVisiblity="SetVisiblity"
+    OnSave="OnSave" />
 
 @code {
     public bool TaskToDoFormVisible { get; set; } = false;
@@ -144,6 +180,48 @@
     IEnumerable<TaskToDo> DataSource { get; set; }
     List<User> Users { get; set; } = [];
     List<Project> Projects { get; set; } = [];
+
+    private void OnSave()
+    {
+        DataSource = TaskService.GetAllTasksToDo();
+        Grid.Reload();
+    }
+
+    private void AssignedToSortOrderChanged(GridColumnSortOrder gridColumnSortOrder)
+    {
+        if (gridColumnSortOrder == GridColumnSortOrder.Ascending)
+        {
+            DataSource = DataSource.OrderBy(x => x.AssignedTo?.FullName);
+        }
+        else
+        {
+            DataSource = DataSource.OrderByDescending(x => x.AssignedTo?.FullName);
+        }
+    }
+
+    private void CreatedBySortOrderChanged(GridColumnSortOrder gridColumnSortOrder)
+    {
+        if(gridColumnSortOrder == GridColumnSortOrder.Ascending)
+        {
+            DataSource = DataSource.OrderBy(x => x.CreatedBy?.FullName);
+        }
+        else
+        {
+            DataSource = DataSource.OrderByDescending(x => x.CreatedBy?.FullName);
+        }
+    }
+
+    private void ProjectSortOrderChanged(GridColumnSortOrder gridColumnSortOrder)
+    {
+        if (gridColumnSortOrder == GridColumnSortOrder.Ascending)
+        {
+            DataSource = DataSource.OrderBy(x => x.Project?.Name);
+        }
+        else
+        {
+            DataSource = DataSource.OrderByDescending(x => x.Project?.Name);
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -199,7 +277,6 @@
         Task = Grid.GetDataItem(index) as TaskToDo;
         TaskToDoFormVisible = true;
     }
-
     
     public static string GetPriorityBackgroundColor(TaskPriority priority)
     {
@@ -218,22 +295,9 @@
         return status switch
         {
             Status.ToDo => "#DEAA79",
-            Status.InProgress => "#FFE6A9",
+            Status.InProgress => "#789ECC",
             Status.Done => "#B1C29E",
             _ => "transparent"
         };
     }
-
-     // <CellDisplayTemplate>
-     //            @{
-     //                var dueDate = (DateTime)context.Value;
-     //                var isOverdue = dueDate < DateTime.Now;
-     //                var style = isOverdue ? "color: red;" : string.Empty;
-     //            }
-     //            <div style="@style">
-     //                @dueDate.ToString("dd/MM/yyyy HH:mm")
-     //            </div>
-     // </CellDisplayTemplate>
 }
-
-

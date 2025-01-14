@@ -1,5 +1,6 @@
 ﻿@rendermode InteractiveServer
 @inject TaskService TaskService
+@inject IHttpContextAccessor HttpContextAccessor
 
 <DxPopup @bind-Visible="@Visible"
          HeaderText="Edytuj Zadanie"
@@ -76,9 +77,11 @@
                 <DxFormLayoutItem Caption="Tagi:" ColSpanMd="12">
                     <Template Context="CategoryContext">
                         <div class="category">
-                            <div style="width: 90%; box-sizing: border-box;" class="d-flex justify-content-end">
-                                <div style="width: 90%; box-sizing: border-box;">
-                                </div>
+                            <div style="width: 90%;">
+                                    <TagBox TaskId="@Task.Id"
+                                             SelectedTags="@Tags"
+                                             SelectedTagsChanged="OnTagsChanged"> 
+                                    </TagBox>
                             </div>
                             <div style="width: 10%; box-sizing: border-box;" class="d-flex justify-content-center align-content-center">
                                 <DxButton CssClass="grid-delete-btn"
@@ -159,14 +162,13 @@
     </FooterContentTemplate>
 </DxPopup>
 
-<TagForm Tag="tag" Visible="TagFormVisible" SetTagVisiblity="SetTagVisiblity" />
+<TagForm Tag="tag" Visible="TagFormVisible" SetTagVisiblity="SetTagVisiblity" /> 
 
 @code {
     Tag tag;
     private List<Tag> Tags { get; set; } = new List<Tag>();
     public bool TagFormVisible { get; set; } = false;
     public TaskPriority TaskPriority { get; set; }
-    public Status Status { get; set; }
 
     public string Message { get; set; }
 
@@ -182,10 +184,20 @@
     public Action<bool> SetVisiblity { get; set; }
 
     [Parameter]
+    public System.Action OnSave { get; set; }
+
+    [Parameter]
     public bool TagVisible { get; set; } = false;
 
     [Parameter]
     public Project Project { get; set; }
+
+    private List<Tag> _selectedTags;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+    }
 
     void OnStartAtChanged(DateTime? date)
     {
@@ -200,28 +212,30 @@
     void OnAddCommentClick()
     {
         Comment comment = new Comment
-            {
-                Message = Message,
+        {
+            Message = Message,
+            UserId = GetCurrentUserId()
         };
 
         Task.Comments.Add(comment);
     }
 
-    void OnStatusChanged(Status status)
+    private int GetCurrentUserId()
     {
-        Task.Status = status;
-        SaveTaskChanges(); 
+        var claimId = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+        return int.Parse(claimId.Value);
     }
 
     async Task SaveTaskChanges()
     {
-        await TaskService.UpdateTaskToDoAsync(Task);
+        await TaskService.UpdateTaskToDoAsync(Task, _selectedTags);
     }
 
     void OnOkButtonClick()
     {
         SaveTaskChanges();
         SetVisiblity?.Invoke(false);
+        OnSave?.Invoke();
     }
 
     void OnCloseButtonClick()
@@ -240,22 +254,18 @@
         TagFormVisible = true;
     }
 
-    // private void OnTagsChanged(IEnumerable<TaskTag> newTags)
-    // {
-    //     // Przypisz nową listę tagów do Task.TaskTags
-    //     Task.TaskTags = newTags.ToList();
-    // }
+   private void OnTagsChanged(IEnumerable<Tag> newTags)
+   {
+        // Przypisz nową listę tagów do Task.TaskTags
+        _selectedTags = newTags.ToList();
+   }
 
-     // private async Task OnTagsChanged(List<Tag> updatedTags)
-     // {
-     //     Tags = updatedTags;
-     // }
+     private async Task OnTagsChanged(List<Tag> updatedTags)
+     {
+         Tags = updatedTags;
+     }
 
-
-    // <TagBox ProjectId="123"
-    //         SelectedTags="@Tags"
-    //         SelectedTagsChanged="OnTagsChanged">
-    // </TagBox>
+    
 }
 
 

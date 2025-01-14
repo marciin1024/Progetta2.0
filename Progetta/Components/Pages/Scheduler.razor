@@ -158,8 +158,18 @@
             taskToDo.Description = appointment.Description;
             taskToDo.StartAt = appointment.StartDate;
             taskToDo.DueDate = appointment.EndDate;
-            taskToDo.AssignedToId = appointment.AssignedToId;
-            taskToDo.AssignedTo = context.Users.FirstOrDefault(x => x.Id == appointment.AssignedToId);
+
+            if(appointment.AssignedToId == 0)
+            {
+                taskToDo.AssignedToId = null;
+                taskToDo.AssignedTo = null;
+            }
+            else
+            {
+                taskToDo.AssignedToId = appointment.AssignedToId;
+                taskToDo.AssignedTo = context.Users.FirstOrDefault(x => x.Id == appointment.AssignedToId);
+            }
+           
             context.SaveChanges();
 
             appointmentItem.Subject = GetSubject(taskToDo);

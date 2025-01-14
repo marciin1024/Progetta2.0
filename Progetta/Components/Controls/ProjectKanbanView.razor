@@ -3,6 +3,7 @@
 @inject UserService UserService
 @inject ProjectService ProjectService
 @inject NavigationManager Navigation
+@inject IDbContextFactory<ProjectContext> ContextFactory
 
 
 <h3>Kanban</h3>
@@ -120,12 +121,12 @@
     }
 
     private string GetTaskCardClass(TaskToDo task)
-    {
-        return task.Priority switch
+    { 
+        return task.Status switch
         {
-            TaskPriority.Wysoki => "alert-danger",
-            TaskPriority.Średni => "alert-warning",
-            TaskPriority.Niski => "alert-success",
+            Status.ToDo => "color-todo",
+            Status.InProgress => "color-inprogress",
+            Status.Done => "color-done",
             _ => "alert-primary"
         };
     }
@@ -148,14 +149,21 @@
 
     private async Task AddTask()
     {
-        TaskToDo newTask = new TaskToDo
-        {
-            Name = "Nowe zadanie",
-            ProjectId = ProjectId,
-            CreatedAt = DateTime.UtcNow
-        };
+        using ProjectContext context = await ContextFactory.CreateDbContextAsync();
 
-        await TaskService.AddTaskAsync(newTask);
+        DateOnly dateOnlyNow = new DateOnly(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day);
+        TimeOnly timeOnlyStartAt = new TimeOnly(DateTime.Now.Hour + 1, 0, 0);
+        TimeOnly timeOnlyDayEnd = new TimeOnly(23, 59, 0);
+
+        TaskToDo newTask = new TaskToDo();
+
+        newTask.Name = "Nowe zadanie";
+        newTask.ProjectId = ProjectId;
+        newTask.StartAt = new DateTime(dateOnlyNow, timeOnlyStartAt);
+        newTask.DueDate = new DateTime(dateOnlyNow, timeOnlyDayEnd);
+        newTask.CreatedAt = DateTime.UtcNow;
+        context.TasksToDo.Add(newTask);
+        await context.SaveChangesAsync();
         await LoadData();
     }
 

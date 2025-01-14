@@ -1,6 +1,9 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Identity
+@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 @inject ProjectService ProjectService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject UserManager<User> UserManager;
 
 <div class="page">
     <AuthorizeView>
@@ -53,6 +56,34 @@
     [SupplyParameterFromQuery(Name = UrlGenerator.ToggleSidebarName)]
     public bool ToggledSidebar { get; set; }
 
+    private string _fullName;
+    private string _roleName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        int currentUserId = GetCurrentUserId();
+        if(currentUserId != 0)
+        {
+            User user = await UserManager.FindByIdAsync(currentUserId.ToString());
+            if(user is not null)
+            {
+                _fullName = user.FullName;
+                IList<string> roles = await UserManager.GetRolesAsync(user);
+
+                if (roles.Any(x => x == "Administrator"))
+                {
+                    _roleName = "Kierownik projektu";
+                }
+                else
+                {
+                    _roleName = "Członek zespołu";
+                }
+            }
+        }
+    }
+
     private RenderFragment drawerHeader => @<div class="navigation-drawer-header">
         <img class="logo" src="images/Progetta.png" alt="Progetta logo" />
         <NavLink href="@UrlGenerator.GetUrl(new Uri(NavigationManager.Uri).LocalPath, !ToggledSidebar)">
@@ -61,8 +92,21 @@
     </div>;
 
     private RenderFragment drawerFooter => @<div class="pb-5">
+        <p>@_fullName</p>
+        <p>@_roleName</p>
         <NavLink href="/Account/Logout" class="button-link">
             <DxButton Text="Wyloguj" RenderStyleMode="@ButtonRenderStyleMode.Text" CssClass="footer-button" RenderStyle="@ButtonRenderStyle.Light" IconCssClass="icon-log-out"></DxButton>
         </NavLink>
-    </div>;
+    </div>
+    ;
+
+    private int GetCurrentUserId()
+    {
+        var claimId = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+        if(claimId is null)
+        {
+            return 0;
+        }
+        return int.Parse(claimId.Value);
+    }
 }

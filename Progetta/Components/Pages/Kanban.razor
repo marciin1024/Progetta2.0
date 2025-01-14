@@ -113,11 +113,11 @@
 
     private string GetTaskCardClass(TaskToDo task)
     {
-        return task.Priority switch
+        return task.Status switch
         {
-            TaskPriority.Wysoki => "alert-danger",
-            TaskPriority.Średni => "alert-warning",
-            TaskPriority.Niski => "alert-success",
+            Status.ToDo => "color-todo",
+            Status.InProgress => "color-inprogress",
+            Status.Done => "color-done",
             _ => "alert-primary"
         };
     }
